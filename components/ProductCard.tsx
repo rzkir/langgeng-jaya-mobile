@@ -5,6 +5,7 @@ import { Image, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useCart } from '@/context/CartContext';
+import { router, usePathname } from 'expo-router';
 
 type ProductCardProps = {
     product: Product;
@@ -12,9 +13,14 @@ type ProductCardProps = {
 
 export function ProductCard({ product }: ProductCardProps) {
     const { addItem, getItemQuantity } = useCart();
+    const pathname = usePathname();
 
     const hasImage = !!product.image_url;
     const quantityInCart = getItemQuantity(product.id);
+
+    // Tentukan halaman saat ini
+    const isProductsPage = pathname.includes('/products');
+    const isBerandaPage = pathname.includes('/beranda');
 
     const handleAddToCart = () => {
         addItem(product, 1);
@@ -69,13 +75,26 @@ export function ProductCard({ product }: ProductCardProps) {
                             </Text>
                         )}
                     </View>
-                    <TouchableOpacity
-                        className="w-9 h-9 rounded-2xl bg-gray-900 items-center justify-center"
-                        activeOpacity={0.8}
-                        onPress={handleAddToCart}
-                    >
-                        <Ionicons name="add" size={18} color="#FFFFFF" />
-                    </TouchableOpacity>
+                    <View className="flex-row gap-2">
+                        {!isProductsPage && (
+                            <TouchableOpacity
+                                className="w-9 h-9 rounded-2xl bg-gray-900 items-center justify-center"
+                                activeOpacity={0.8}
+                                onPress={handleAddToCart}
+                            >
+                                <Ionicons name="add" size={18} color="#FFFFFF" />
+                            </TouchableOpacity>
+                        )}
+                        {!isBerandaPage && (
+                            <TouchableOpacity
+                                className="w-9 h-9 rounded-2xl bg-gray-900 items-center justify-center"
+                                activeOpacity={0.8}
+                                onPress={() => router.push(`/products/${product.id}`)}
+                            >
+                                <Ionicons name="information-circle-outline" size={18} color="#FFFFFF" />
+                            </TouchableOpacity>
+                        )}
+                    </View>
                 </View>
             </View>
         </View>

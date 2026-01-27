@@ -4,7 +4,7 @@ import { ProductCard } from '@/components/ProductCard';
 
 import { DeleteModal } from '@/components/DeleteModal';
 
-import { fetchCategories, fetchKaryawanProducts } from '@/lib/FetchProducts';
+import { fetchCategories, fetchKaryawanProducts } from '@/services/FetchProducts';
 
 import { Ionicons } from '@expo/vector-icons';
 
@@ -25,8 +25,28 @@ import { useQuery } from '@tanstack/react-query';
 
 import { useCart } from '@/context/CartContext';
 
+import AntDesign from '@expo/vector-icons/AntDesign';
+
+// Helper function untuk mendapatkan icon berdasarkan nama kategori
+const getCategoryIcon = (categoryName: string): keyof typeof Ionicons.glyphMap => {
+    const name = categoryName.toLowerCase();
+
+    if (name.includes('sembako')) {
+        return 'storefront-outline';
+    } else if (name.includes('minuman')) {
+        return 'water-outline';
+    } else if (name.includes('material')) {
+        return 'construct-outline';
+    } else if (name.includes('kebutuhan rumah') || name.includes('rumah')) {
+        return 'home-outline';
+    }
+
+    // Default icon jika tidak cocok
+    return 'cube-outline';
+};
+
 export default function Beranda() {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const { totalItems, totalPrice, clearCart } = useCart();
     const branchName = user?.branchName || '';
 
@@ -55,8 +75,8 @@ export default function Beranda() {
 
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-    const handleLogout = async () => {
-        await logout();
+    const handleMenu = () => {
+        // TODO: Implement menu functionality
     };
 
     const errorMessage =
@@ -84,19 +104,19 @@ export default function Beranda() {
     };
 
     return (
-        <View className="flex-1 bg-gray-50">
+        <View className="flex-1 bg-white">
             <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: totalItems > 0 ? 80 : 40 }}
+                contentContainerStyle={{ paddingBottom: totalItems > 0 ? 80 : 0 }}
             >
                 {/* Header ala lokasi & user */}
                 <View className="bg-white px-4 pt-4 pb-4 rounded-b-3xl shadow-sm">
                     <View className="flex-row items-center justify-between mb-5">
                         <TouchableOpacity
-                            onPress={handleLogout}
-                            className="w-10 h-10 rounded-full bg-red-50 items-center justify-center"
+                            onPress={handleMenu}
+                            className="items-center justify-center left-1"
                         >
-                            <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+                            <AntDesign name="align-left" size={24} color="black" />
                         </TouchableOpacity>
 
                         <View className="items-center flex-1">
@@ -167,26 +187,25 @@ export default function Beranda() {
                         <ScrollView
                             horizontal
                             showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={{ paddingRight: 24 }}
+                            contentContainerStyle={{ paddingRight: 24, gap: 14 }}
                         >
                             {/* All / Semua category */}
                             <TouchableOpacity
-                                className="mr-4 items-center"
+                                className="items-center"
                                 activeOpacity={0.8}
                                 onPress={() => setSelectedCategory(null)}
                             >
                                 <View
-                                    className={`w-12 h-12 rounded-full shadow-sm items-center justify-center mb-1 border ${!selectedCategory
+                                    className={`w-14 h-14 rounded-full shadow-sm items-center justify-center mb-1 border ${!selectedCategory
                                         ? 'bg-gray-900 border-gray-900'
                                         : 'bg-white border-gray-100'
                                         }`}
                                 >
-                                    <Text
-                                        className={`text-base font-semibold ${!selectedCategory ? 'text-white' : 'text-gray-700'
-                                            }`}
-                                    >
-                                        A
-                                    </Text>
+                                    <Ionicons
+                                        name="grid-outline"
+                                        size={20}
+                                        color={!selectedCategory ? '#FFFFFF' : '#374151'}
+                                    />
                                 </View>
                                 <Text
                                     className={`text-[11px] ${!selectedCategory
@@ -203,11 +222,12 @@ export default function Beranda() {
                                 const isActive =
                                     selectedCategory &&
                                     item.name.toLowerCase() === selectedCategory.toLowerCase();
+                                const iconName = getCategoryIcon(item.name);
 
                                 return (
                                     <TouchableOpacity
                                         key={item.id}
-                                        className="mr-4 items-center"
+                                        className="items-center"
                                         activeOpacity={0.8}
                                         onPress={() =>
                                             setSelectedCategory((prev) =>
@@ -220,19 +240,16 @@ export default function Beranda() {
                                         }
                                     >
                                         <View
-                                            className={`w-12 h-12 rounded-full shadow-sm items-center justify-center mb-1 border ${isActive
+                                            className={`w-14 h-14 rounded-full shadow-sm items-center justify-center mb-1 border ${isActive
                                                 ? 'bg-gray-900 border-gray-900'
                                                 : 'bg-white border-gray-100'
                                                 }`}
                                         >
-                                            <Text
-                                                className={`text-base font-semibold ${isActive
-                                                    ? 'text-white'
-                                                    : 'text-gray-700'
-                                                    }`}
-                                            >
-                                                {item.name.charAt(0).toUpperCase()}
-                                            </Text>
+                                            <Ionicons
+                                                name={iconName}
+                                                size={20}
+                                                color={isActive ? '#FFFFFF' : '#374151'}
+                                            />
                                         </View>
                                         <Text
                                             className={`text-[11px] ${isActive
@@ -251,7 +268,7 @@ export default function Beranda() {
                 </View>
 
                 {/* Produk grid */}
-                <View className="mt-4 px-4">
+                <View className="mt-6 px-4">
                     <View className="flex-row items-center justify-between mb-3">
                         <Text className="text-lg font-semibold text-gray-900">
                             Rekomendasi untukmu

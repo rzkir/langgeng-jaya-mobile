@@ -58,3 +58,29 @@ export async function fetchCategories(): Promise<CategoriesResponse> {
         throw error instanceof Error ? error : new Error("Failed to fetch categories")
     }
 }
+
+export async function fetchProductDetails(id: string): Promise<ProductDetails> {
+    try {
+        const data = await apiFetch<ApiResponse<ProductDetails> | ProductDetails>(
+            API_CONFIG.ENDPOINTS.karyawan.products.details(id)
+        )
+
+        // Check if response is wrapped in ApiResponse
+        if (data && typeof data === 'object' && 'success' in data && 'data' in data) {
+            const response = data as ApiResponse<ProductDetails>
+            if (!response.success) {
+                throw new Error(response.message || "Failed to fetch product details")
+            }
+            return response.data
+        }
+
+        // Otherwise return data directly
+        return data as ProductDetails
+    } catch (error) {
+        console.error("Fetch product details error:", error)
+        if (error && typeof error === 'object' && 'status' in error && error.status === 401) {
+            throw new Error("Unauthorized")
+        }
+        throw error instanceof Error ? error : new Error("Failed to fetch product details")
+    }
+}
