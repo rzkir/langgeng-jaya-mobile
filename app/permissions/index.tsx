@@ -18,7 +18,10 @@ import {
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useAuth } from '@/context/AuthContext';
+
 export default function PermissionsScreen() {
+    const { isAuthenticated } = useAuth();
     const {
         requestPermissions,
         loading,
@@ -28,13 +31,15 @@ export default function PermissionsScreen() {
     const hasRedirected = useRef(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
+    const postPermissionsRoute = isAuthenticated ? '/(tabs)/beranda' : '/login';
+
     useEffect(() => {
         const checkPermissionVisit = async () => {
             try {
                 const hasVisitedPermissions = await AsyncStorage.getItem('has_visited_permissions');
                 if (hasVisitedPermissions === 'true' && !hasRedirected.current) {
                     hasRedirected.current = true;
-                    router.replace('/welcome');
+                    router.replace(postPermissionsRoute);
                 }
             } catch {
                 // ignore
@@ -42,16 +47,16 @@ export default function PermissionsScreen() {
         };
 
         checkPermissionVisit();
-    }, []);
+    }, [isAuthenticated, postPermissionsRoute]);
 
     // Check if permissions are already granted and redirect
     useEffect(() => {
         if (allPermissionsGranted && !hasRedirected.current) {
             hasRedirected.current = true;
             AsyncStorage.setItem('has_visited_permissions', 'true');
-            router.replace('/welcome');
+            router.replace(postPermissionsRoute);
         }
-    }, [allPermissionsGranted]);
+    }, [allPermissionsGranted, isAuthenticated, postPermissionsRoute]);
 
     const handleGrantPermissions = async () => {
         if (isProcessing) return; // Prevent multiple clicks
@@ -67,12 +72,12 @@ export default function PermissionsScreen() {
             await Promise.race([requestPermissions(), timeoutPromise]);
 
             await AsyncStorage.setItem('has_visited_permissions', 'true');
-            router.replace('/welcome');
+            router.replace(postPermissionsRoute);
         } catch (error) {
             console.error('Permission request error:', error);
             // Still navigate even if permission request fails
             await AsyncStorage.setItem('has_visited_permissions', 'true');
-            router.replace('/welcome');
+            router.replace(postPermissionsRoute);
         } finally {
             setIsProcessing(false);
         }
@@ -80,7 +85,7 @@ export default function PermissionsScreen() {
 
     const handleSkip = async () => {
         await AsyncStorage.setItem('has_visited_permissions', 'true');
-        router.replace('/welcome');
+        router.replace(postPermissionsRoute);
     };
 
     const getPermissionStatus = () => {

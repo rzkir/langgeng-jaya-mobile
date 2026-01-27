@@ -1,4 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
+
 import { Tabs } from 'expo-router';
 
 export default function TabsLayout() {
@@ -6,12 +7,11 @@ export default function TabsLayout() {
         <Tabs
             screenOptions={{
                 headerShown: false,
-                tabBarActiveTintColor: '#FF9228',
-                tabBarInactiveTintColor: '#8E8E93',
+                tabBarInactiveTintColor: '#6B7280',
                 tabBarStyle: {
                     backgroundColor: '#ffffff',
                     borderTopWidth: 1,
-                    borderTopColor: '#E5E5EA',
+                    borderTopColor: '#D1D5DB',
                     height: 60,
                     paddingBottom: 8,
                     paddingTop: 8,
@@ -23,7 +23,7 @@ export default function TabsLayout() {
             }}
         >
             <Tabs.Screen
-                name="beranda"
+                name="beranda/index"
                 options={{
                     title: 'Beranda',
                     tabBarIcon: ({ color, size }) => (
@@ -32,7 +32,7 @@ export default function TabsLayout() {
                 }}
             />
             <Tabs.Screen
-                name="products"
+                name="products/index"
                 options={{
                     title: 'Products',
                     tabBarIcon: ({ color, size }) => (
@@ -41,7 +41,7 @@ export default function TabsLayout() {
                 }}
             />
             <Tabs.Screen
-                name="transaction"
+                name="transaction/index"
                 options={{
                     title: 'Transaction',
                     tabBarIcon: ({ color, size }) => (
@@ -50,7 +50,7 @@ export default function TabsLayout() {
                 }}
             />
             <Tabs.Screen
-                name="profile"
+                name="profile/index"
                 options={{
                     title: 'Profile',
                     tabBarIcon: ({ color, size }) => (

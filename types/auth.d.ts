@@ -7,7 +7,7 @@ interface User {
     email: string;
     name: string;
     roleType: RoleType;
-    branchId: string;
+    branchName?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -16,6 +16,7 @@ interface LoginRequest {
     email?: string;
     name?: string;
     password: string;
+    branchName?: string;
 }
 
 interface AuthResponse {

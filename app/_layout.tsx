@@ -16,13 +16,21 @@ import "@/global.css";
 
 import Toast from 'react-native-toast-message';
 
+import { AuthProvider } from '@/context/AuthContext';
+
 import { PermissionProvider } from '@/context/PermissionContext';
+
+import { CartProvider } from '@/context/CartContext';
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export const unstable_settings = {
   initialRouteName: 'index',
 };
+
+const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const notificationListener = useRef<any>(null);
@@ -96,26 +104,32 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <StatusBar style="dark" backgroundColor="#FF9228" />
-        <PermissionProvider>
-          <SafeAreaView style={{ flex: 1, backgroundColor: '#ffffff' }} edges={['top', 'bottom']}>
-            <Stack
-              initialRouteName="index"
-              screenOptions={{
-                headerShown: false,
-                animation: 'slide_from_right',
-                animationDuration: 300,
-                contentStyle: { backgroundColor: '#ffffff' },
-              }}
-            >
-              <Stack.Screen name="index" />
-              <Stack.Screen name="(tabs)" />
-            </Stack>
-          </SafeAreaView>
-        </PermissionProvider>
-      </SafeAreaProvider>
-      <Toast />
+      <QueryClientProvider client={queryClient}>
+        <SafeAreaProvider>
+          <StatusBar style="dark" />
+          <AuthProvider>
+            <PermissionProvider>
+              <CartProvider>
+                <SafeAreaView style={{ flex: 1, backgroundColor: '#ffffff' }} edges={['top', 'bottom']}>
+                  <Stack
+                    initialRouteName="index"
+                    screenOptions={{
+                      headerShown: false,
+                      animation: 'slide_from_right',
+                      animationDuration: 300,
+                      contentStyle: { backgroundColor: '#ffffff' },
+                    }}
+                  >
+                    <Stack.Screen name="index" />
+                    <Stack.Screen name="(tabs)" />
+                  </Stack>
+                </SafeAreaView>
+              </CartProvider>
+            </PermissionProvider>
+          </AuthProvider>
+        </SafeAreaProvider>
+        <Toast />
+      </QueryClientProvider>
     </GestureHandlerRootView>
   );
 }

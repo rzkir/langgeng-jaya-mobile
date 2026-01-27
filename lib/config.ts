@@ -1,20 +1,28 @@
 const API_BASE_URL = process.env.EXPO_PUBLIC_API
+
 const API_SECRET = process.env.EXPO_PUBLIC_API_SECRET
 
 export const API_CONFIG = {
     ENDPOINTS: {
         base: API_BASE_URL,
         auth: {
-            login: `${API_BASE_URL}/auth/login`,
+            login: `${API_BASE_URL}/karyawan`,
             session: `${API_BASE_URL}/auth/session`,
-            logout: `${API_BASE_URL}/auth/logout`,
         },
-        products: {
-            base: `${API_BASE_URL}/products`,
-            byId: (id: string | number) => `${API_BASE_URL}/products/${encodeURIComponent(String(id))}`,
+        karyawan: {
+            products: {
+                list: (branchName: string, page: number = 1, limit: number = 100) => {
+                    const params = new URLSearchParams({
+                        branch_name: branchName.trim(),
+                        page: String(page),
+                        limit: String(limit),
+                    });
+                    return `${API_BASE_URL}/karyawan/products?${params.toString()}`;
+                },
+            },
         },
         categories: {
-            base: `${API_BASE_URL}/categories`,
+            list: `${API_BASE_URL}/categories`,
             byId: (id: string | number) => `${API_BASE_URL}/categories/${encodeURIComponent(String(id))}`,
         },
         customers: {
