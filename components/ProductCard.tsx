@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { useCart } from '@/context/CartContext';
 
-import { router, usePathname } from 'expo-router';
+import { router } from 'expo-router';
 
 import Toast from 'react-native-toast-message';
 
@@ -16,15 +16,9 @@ type ProductCardProps = {
 
 export function ProductCard({ product }: ProductCardProps) {
     const { addItem, getItemQuantity } = useCart();
-    const pathname = usePathname();
 
     const hasImage = !!product.image_url;
     const quantityInCart = getItemQuantity(product.id);
-
-    // Tentukan halaman saat ini
-    const isProductsPage = pathname.includes('/products');
-    const isCheckoutPage = pathname.includes('/checkout');
-    const isBerandaPage = pathname.includes('/beranda');
 
     const handleAddToCart = () => {
         addItem(product, 1);
@@ -37,7 +31,9 @@ export function ProductCard({ product }: ProductCardProps) {
     };
 
     return (
-        <View className="bg-white rounded-3xl p-3 mb-4 border border-gray-100 shadow-sm">
+        <TouchableOpacity activeOpacity={0.85}
+            onPress={() => router.push(`/products/${product.id}`)}
+            className="bg-white rounded-3xl p-3 mb-4 border border-gray-100 shadow-sm">
             {/* Gambar produk */}
             <View className="items-center justify-center mb-3">
                 {hasImage ? (
@@ -86,28 +82,17 @@ export function ProductCard({ product }: ProductCardProps) {
                         )}
                     </View>
                     <View className="flex-row gap-2">
-                        {!isProductsPage && (
-                            <TouchableOpacity
-                                className="w-9 h-9 rounded-2xl bg-gray-900 items-center justify-center"
-                                activeOpacity={0.8}
-                                onPress={handleAddToCart}
-                            >
-                                <Ionicons name="cart" size={18} color="#FFFFFF" />
-                            </TouchableOpacity>
-                        )}
-                        {!isBerandaPage && !isCheckoutPage && (
-                            <TouchableOpacity
-                                className="w-9 h-9 rounded-2xl bg-gray-900 items-center justify-center"
-                                activeOpacity={0.8}
-                                onPress={() => router.push(`/products/${product.id}`)}
-                            >
-                                <Ionicons name="information-circle-outline" size={18} color="#FFFFFF" />
-                            </TouchableOpacity>
-                        )}
+                        <TouchableOpacity
+                            className="w-9 h-9 rounded-2xl bg-gray-900 items-center justify-center"
+                            activeOpacity={0.8}
+                            onPress={handleAddToCart}
+                        >
+                            <Ionicons name="cart" size={18} color="#FFFFFF" />
+                        </TouchableOpacity>
                     </View>
                 </View>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 }
 

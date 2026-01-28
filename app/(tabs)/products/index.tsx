@@ -1,45 +1,60 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { FlatList, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-import { useQuery } from '@tanstack/react-query';
+import { RefreshControl } from 'react-native-gesture-handler';
 
-import { useAuth } from '@/context/AuthContext';
-
-import { fetchKaryawanProducts } from '@/services/FetchProducts';
+import { useStateProducts } from '@/services/useStateProducts';
 
 import { ProductCard } from '@/components/ProductCard';
 
+import Scanner from '@/components/checkout/checkout/Scanner';
+
 import { Ionicons } from '@expo/vector-icons';
 
-export default function Products() {
-    const { user } = useAuth();
-    const branchName = user?.branchName || '';
+import { router } from 'expo-router';
 
+import { DeleteModal } from '@/components/DeleteModal';
+
+export default function Products() {
     const {
-        data,
+        products,
         isLoading,
         error,
-    } = useQuery({
-        queryKey: ['karyawan-products', branchName],
-        queryFn: () => fetchKaryawanProducts(branchName),
-        enabled: !!branchName,
-    });
+        errorMessage,
 
-    const products = useMemo(() => data?.data ?? [], [data]);
+        totalItems,
+        totalPrice,
 
-    const errorMessage =
-        error instanceof Error ? error.message : 'Gagal memuat produk';
+        isRefreshing,
+        handleRefresh,
+
+        isScannerVisible,
+        setScannerVisible,
+        ScannerComponent,
+        handleOpenScanner,
+        handleBarCodeScanned,
+
+        isConfirmVisible,
+        setIsConfirmVisible,
+        handleConfirmDelete,
+    } = useStateProducts();
 
     return (
         <View className="flex-1 bg-white">
             <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 20 }}
+                contentContainerStyle={{ paddingBottom: totalItems > 0 ? 80 : 20 }}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isRefreshing}
+                        onRefresh={handleRefresh}
+                    />
+                }
             >
                 <View className="bg-white px-4 pt-4 pb-4 rounded-b-3xl shadow-sm">
                     <View className="flex-row items-center">
-                        <View className="flex-1 flex-row items-center bg-gray-100 rounded-2xl px-4 py-3 mr-3">
+                        <View className="flex-1 flex-row items-center bg-gray-100 rounded-2xl px-4 py-1 mr-3">
                             <Ionicons name="search-outline" size={18} color="#9CA3AF" />
                             <TextInput
                                 placeholder="Cari menu favorit..."
@@ -48,8 +63,12 @@ export default function Products() {
                             />
                         </View>
 
-                        <TouchableOpacity className="w-11 h-11 rounded-2xl bg-gray-900 items-center justify-center">
-                            <Ionicons name="options-outline" size={18} color="#FFFFFF" />
+                        <TouchableOpacity
+                            className="w-11 h-11 rounded-2xl bg-gray-900 items-center justify-center"
+                            activeOpacity={0.85}
+                            onPress={handleOpenScanner}
+                        >
+                            <Ionicons name="scan" size={18} color="#FFFFFF" />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -118,6 +137,55 @@ export default function Products() {
                     </View>
                 )}
             </ScrollView>
+
+            {/* Bottom cart bar - muncul hanya ketika ada item */}
+            {totalItems > 0 && (
+                <View className="absolute bottom-0 left-0 right-0 px-6 pb-6">
+                    <View className="bg-white rounded-3xl flex-row items-center justify-between px-5 py-3 shadow-xl border border-gray-100">
+                        <View>
+                            <Text className="text-xs text-gray-400">Keranjang</Text>
+                            <Text className="text-base font-semibold text-gray-900">
+                                {totalItems} item dipilih · Rp {totalPrice.toLocaleString('id-ID')}
+                            </Text>
+                        </View>
+                        <View className="flex-row items-center gap-2">
+                            <TouchableOpacity
+                                onPress={() => setIsConfirmVisible(true)}
+                                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                                className="w-11 h-11 rounded-2xl bg-red-50 items-center justify-center"
+                            >
+                                <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => router.push('/checkout' as any)}
+                                className="w-11 h-11 rounded-2xl bg-gray-900 items-center justify-center"
+                                activeOpacity={0.85}
+                            >
+                                <Ionicons name="cart-outline" size={20} color="#FFFFFF" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            )}
+
+            {ScannerComponent && (
+                <Scanner
+                    visible={isScannerVisible}
+                    onClose={() => setScannerVisible(false)}
+                    ScannerComponent={ScannerComponent}
+                    onBarCodeScanned={handleBarCodeScanned}
+                />
+            )}
+
+            {/* Modal konfirmasi hapus keranjang */}
+            <DeleteModal
+                visible={isConfirmVisible}
+                title="Hapus keranjang?"
+                message="Apakah kamu yakin ingin menghapus semua item di keranjang?"
+                onCancel={() => setIsConfirmVisible(false)}
+                onConfirm={handleConfirmDelete}
+            />
         </View>
     );
 }

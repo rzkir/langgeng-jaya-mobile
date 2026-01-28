@@ -1,3 +1,5 @@
+import { Ionicons } from '@expo/vector-icons';
+
 export const onboardingData: OnboardingSlide[] = [
     {
         id: 1,
@@ -58,3 +60,42 @@ export const STATUS_STYLES: Record<
         defaultLabel: 'Canceled',
     },
 };
+
+export const getCategoryIcon = (categoryName: string): keyof typeof Ionicons.glyphMap => {
+    const name = categoryName.toLowerCase();
+
+    if (name.includes('sembako')) {
+        return 'storefront-outline';
+    } else if (name.includes('minuman')) {
+        return 'water-outline';
+    } else if (name.includes('material')) {
+        return 'construct-outline';
+    } else if (name.includes('kebutuhan rumah') || name.includes('rumah')) {
+        return 'home-outline';
+    }
+
+    return 'cube-outline';
+};
+
+export const HeaderData = [
+    {
+        id: 1,
+        title: "Rekaputasi",
+        link: "/transaction",
+    },
+    {
+        id: 2,
+        title: "Rekaputasi",
+        link: "/transaction",
+    },
+    {
+        id: 3,
+        title: "Rekaputasi",
+        link: "/transaction",
+    },
+    {
+        id: 4,
+        title: "Rekaputasi",
+        link: "/transaction",
+    }
+]

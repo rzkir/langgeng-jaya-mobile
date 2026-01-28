@@ -1,18 +1,16 @@
-import { useAuth } from '@/context/AuthContext';
-
 import { ProductCard } from '@/components/ProductCard';
 
 import { ProductPopularCard } from '@/components/ProductPopularCard';
 
 import { DeleteModal } from '@/components/DeleteModal';
 
-import { fetchCategories, fetchKaryawanProducts, fetchProductsPopular } from '@/services/FetchProducts';
+import { useStateBeranda } from '@/services/useStateBeranda';
 
 import { Ionicons } from '@expo/vector-icons';
 
 import { router } from 'expo-router';
 
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 
 import {
     FlatList,
@@ -23,147 +21,65 @@ import {
     View
 } from 'react-native';
 
-import { useQuery } from '@tanstack/react-query';
+import { RefreshControl } from 'react-native-gesture-handler';
 
-import { useCart } from '@/context/CartContext';
+import { getCategoryIcon } from "@/assets/data/Data";
 
-import AntDesign from '@expo/vector-icons/AntDesign';
-
-import Toast from 'react-native-toast-message';
-
-// Helper function untuk mendapatkan icon berdasarkan nama kategori
-const getCategoryIcon = (categoryName: string): keyof typeof Ionicons.glyphMap => {
-    const name = categoryName.toLowerCase();
-
-    if (name.includes('sembako')) {
-        return 'storefront-outline';
-    } else if (name.includes('minuman')) {
-        return 'water-outline';
-    } else if (name.includes('material')) {
-        return 'construct-outline';
-    } else if (name.includes('kebutuhan rumah') || name.includes('rumah')) {
-        return 'home-outline';
-    }
-
-    // Default icon jika tidak cocok
-    return 'cube-outline';
-};
+import Scanner from '@/components/checkout/checkout/Scanner';
 
 export default function Beranda() {
-    const { user } = useAuth();
-    const { totalItems, totalPrice, clearCart } = useCart();
-    const branchName = user?.branchName || '';
-
     const {
-        data,
+        totalItems,
+        totalPrice,
+
         isLoading,
         error,
-    } = useQuery({
-        queryKey: ['karyawan-products', branchName],
-        queryFn: () => fetchKaryawanProducts(branchName),
-        enabled: !!branchName,
-    });
+        errorMessage,
 
-    const products = useMemo(() => data?.data ?? [], [data]);
+        popularProducts,
+        popularLoading,
+        popularError,
+        popularErrorMessage,
 
-    const {
-        data: popularData,
-        isLoading: popularLoading,
-        error: popularError,
-    } = useQuery({
-        queryKey: ['karyawan-products-popular', branchName],
-        queryFn: () => fetchProductsPopular(branchName, 10),
-        enabled: !!branchName,
-    });
+        categories,
+        categoriesLoading,
+        categoriesError,
+        categoriesErrorMessage,
 
-    const popularProducts = useMemo(() => popularData?.data ?? [], [popularData]);
+        selectedCategory,
+        setSelectedCategory,
+        filteredProducts,
 
-    const {
-        data: categoriesData,
-        isLoading: categoriesLoading,
-        error: categoriesError,
-    } = useQuery({
-        queryKey: ['karyawan-categories', branchName],
-        queryFn: fetchCategories,
-    });
+        isConfirmVisible,
+        setIsConfirmVisible,
+        handleConfirmDelete,
 
-    const categories = categoriesData?.data ?? [];
+        isRefreshing,
+        handleRefresh,
 
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
-    const handleMenu = () => {
-        // TODO: Implement menu functionality
-    };
-
-    const errorMessage =
-        error instanceof Error ? error.message : 'Gagal memuat produk';
-
-    const popularErrorMessage =
-        popularError instanceof Error ? popularError.message : 'Gagal memuat produk popular';
-
-    const categoriesErrorMessage =
-        categoriesError instanceof Error ? categoriesError.message : 'Gagal memuat kategori';
-
-    const [isConfirmVisible, setIsConfirmVisible] = useState(false);
-
-    const filteredProducts = useMemo(() => {
-        if (!selectedCategory) {
-            return products;
-        }
-        return products.filter(
-            (product) =>
-                product.category_name &&
-                product.category_name.toLowerCase() === selectedCategory.toLowerCase(),
-        );
-    }, [products, selectedCategory]);
-
-    const handleConfirmDelete = () => {
-        clearCart();
-        setIsConfirmVisible(false);
-        Toast.show({
-            type: 'error',
-            topOffset: 50,
-            text1: 'Keranjang dikosongkan',
-            text2: 'Semua item berhasil dihapus.',
-        });
-    };
+        isScannerVisible,
+        setScannerVisible,
+        ScannerComponent,
+        handleOpenScanner,
+        handleBarCodeScanned,
+    } = useStateBeranda();
 
     return (
         <View className="flex-1 bg-white">
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: totalItems > 0 ? 80 : 0 }}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isRefreshing}
+                        onRefresh={handleRefresh}
+                    />
+                }
             >
                 {/* Header ala lokasi & user */}
                 <View className="bg-white px-4 pt-4 pb-4 rounded-b-3xl shadow-sm">
-                    <View className="flex-row items-center justify-between mb-5">
-                        <TouchableOpacity
-                            onPress={handleMenu}
-                            className="items-center justify-center left-1"
-                        >
-                            <AntDesign name="align-left" size={24} color="black" />
-                        </TouchableOpacity>
-
-                        <View className="items-center flex-1">
-                            <Text className="text-[11px] text-gray-400">Lokasi Toko</Text>
-                            <View className="flex-row items-center mt-1">
-                                <Ionicons name="location-outline" size={16} color="#EF4444" />
-                                <Text className="text-gray-900 text-sm font-semibold mx-1">
-                                    {user?.branchName || 'Pilih cabang'}
-                                </Text>
-                            </View>
-                        </View>
-
-                        <View className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center">
-                            <Text className="text-gray-700 font-semibold text-sm">
-                                {user?.name?.charAt(0).toUpperCase() || 'U'}
-                            </Text>
-                        </View>
-                    </View>
-
-                    {/* Search + Filter */}
                     <View className="flex-row items-center">
-                        <View className="flex-1 flex-row items-center bg-gray-100 rounded-2xl px-4 py-3 mr-3">
+                        <View className="flex-1 flex-row items-center bg-gray-100 rounded-2xl px-4 py-1 mr-3">
                             <Ionicons name="search-outline" size={18} color="#9CA3AF" />
                             <TextInput
                                 placeholder="Cari menu favorit..."
@@ -172,18 +88,18 @@ export default function Beranda() {
                             />
                         </View>
 
-                        <TouchableOpacity className="w-11 h-11 rounded-2xl bg-gray-900 items-center justify-center">
-                            <Ionicons name="options-outline" size={18} color="#FFFFFF" />
+                        <TouchableOpacity
+                            className="w-11 h-11 rounded-2xl bg-gray-900 items-center justify-center"
+                            activeOpacity={0.85}
+                            onPress={handleOpenScanner}
+                        >
+                            <Ionicons name="scan" size={18} color="#FFFFFF" />
                         </TouchableOpacity>
                     </View>
                 </View>
 
                 {/* Kategori horizontal */}
                 <View className="mt-4 px-4">
-                    <View className="flex-row items-center justify-between mb-3">
-                        <Text className="text-lg font-semibold text-gray-900">Kategori</Text>
-                    </View>
-
                     {categoriesLoading && (
                         <ScrollView
                             horizontal
@@ -293,15 +209,10 @@ export default function Beranda() {
                 </View>
 
                 {/* Products Popular */}
-                <View className="mt-6 px-4">
-                    <View className="flex-row items-center justify-between">
-                        <Text className="text-lg font-semibold text-gray-900">
-                            Produk terlaris
-                        </Text>
-                        <TouchableOpacity onPress={() => router.push('/(tabs)/products')}>
-                            <Text className="text-sm text-blue-500 font-medium">Lihat semua</Text>
-                        </TouchableOpacity>
-                    </View>
+                <View className="mt-10 px-4">
+                    <Text className="text-lg font-semibold text-gray-900 pl-2 border-l-2 border-gray-600">
+                        Produk terlaris
+                    </Text>
 
                     {popularLoading && (
                         <ScrollView
@@ -352,12 +263,12 @@ export default function Beranda() {
 
                 {/* Produk grid */}
                 <View className="mt-6 px-4">
-                    <View className="flex-row items-center justify-between mb-3">
-                        <Text className="text-lg font-semibold text-gray-900">
+                    <View className="flex-row items-center justify-between mb-4">
+                        <Text className="text-lg font-semibold text-gray-900 pl-2 border-l-2 border-gray-600">
                             Rekomendasi untukmu
                         </Text>
                         <TouchableOpacity onPress={() => router.push('/(tabs)/products')}>
-                            <Text className="text-sm text-blue-500 font-medium">Lihat semua</Text>
+                            <Text className="text-sm text-gray-600 font-medium">Lihat semua</Text>
                         </TouchableOpacity>
                     </View>
 
@@ -451,6 +362,15 @@ export default function Beranda() {
                 onCancel={() => setIsConfirmVisible(false)}
                 onConfirm={handleConfirmDelete}
             />
+
+            {ScannerComponent && (
+                <Scanner
+                    visible={isScannerVisible}
+                    onClose={() => setScannerVisible(false)}
+                    ScannerComponent={ScannerComponent}
+                    onBarCodeScanned={handleBarCodeScanned}
+                />
+            )}
         </View>
     );
 }

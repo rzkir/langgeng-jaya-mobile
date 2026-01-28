@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { ActivityIndicator, Image, Pressable, ScrollView, Text, View } from 'react-native'
+import { Image, Pressable, ScrollView, Text, View, type DimensionValue } from 'react-native'
 
 import { fetchProductDetails } from '@/services/FetchProducts'
 
@@ -9,6 +9,7 @@ import { router, useLocalSearchParams } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 
 import { useQuery } from '@tanstack/react-query'
+import { MotiView } from 'moti'
 
 export default function ProductsDetails() {
     const { id } = useLocalSearchParams()
@@ -20,13 +21,111 @@ export default function ProductsDetails() {
 
     const productDetails = data
 
+    const SkeletonBox = ({
+        width = '100%',
+        height = 12,
+        radius = 12,
+        className = '',
+    }: {
+        width?: DimensionValue
+        height?: number
+        radius?: number
+        className?: string
+    }) => {
+        return (
+            <View className={className}>
+                <MotiView
+                    from={{ opacity: 0.35 }}
+                    animate={{ opacity: 1 }}
+                    transition={{
+                        type: 'timing',
+                        duration: 900,
+                        loop: true,
+                    }}
+                    style={{
+                        width,
+                        height,
+                        borderRadius: radius,
+                        backgroundColor: '#E5E7EB',
+                    }}
+                />
+            </View>
+        )
+    }
+
     if (isLoading) {
         return (
-            <View className="flex-1 bg-white items-center justify-center">
-                <View className="items-center">
-                    <ActivityIndicator size="large" color="#6366F1" />
-                    <Text className="text-gray-600 mt-4 text-sm font-medium">Memuat data produk...</Text>
-                </View>
+            <View className="flex-1 bg-white">
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingBottom: 32 }}
+                >
+                    {/* Header */}
+                    <View className="px-5 pt-4 pb-4 flex-row items-center justify-between">
+                        <View className="bg-gray-50 rounded-full p-2.5">
+                            <Ionicons name="arrow-back" size={20} color="#D1D5DB" />
+                        </View>
+                    </View>
+
+                    {/* Image skeleton */}
+                    <View className="px-5 mb-6">
+                        <View className="bg-gray-50 rounded-2xl overflow-hidden shadow-sm">
+                            <SkeletonBox height={0} radius={0} className="w-full aspect-[4/3]" />
+                        </View>
+                    </View>
+
+                    {/* Content skeleton */}
+                    <View className="px-5">
+                        <SkeletonBox height={26} radius={14} className="mb-3" />
+                        <SkeletonBox height={18} radius={12} className="mb-5 w-3/5" />
+
+                        <View className="flex-row gap-2 mb-6">
+                            <SkeletonBox width={92} height={26} radius={10} />
+                            <SkeletonBox width={110} height={26} radius={10} />
+                        </View>
+
+                        <SkeletonBox height={34} radius={14} className="mb-2 w-3/4" />
+                        <SkeletonBox height={14} radius={10} className="mb-7 w-2/5" />
+
+                        <SkeletonBox height={14} radius={10} className="mb-2" />
+                        <SkeletonBox height={14} radius={10} className="mb-2 w-11/12" />
+                        <SkeletonBox height={14} radius={10} className="mb-2 w-10/12" />
+                    </View>
+
+                    {/* Specs skeleton */}
+                    <View className="px-5 mt-6">
+                        <SkeletonBox height={18} radius={12} className="mb-4 w-2/5" />
+                        <View className="bg-gray-50 rounded-2xl overflow-hidden">
+                            <View className="px-4 py-3.5 border-b border-gray-200/50 flex-row items-center gap-3">
+                                <View className="bg-white rounded-lg p-2.5">
+                                    <Ionicons name="resize-outline" size={18} color="#E5E7EB" />
+                                </View>
+                                <View className="flex-1">
+                                    <SkeletonBox height={10} radius={8} className="mb-2 w-1/4" />
+                                    <SkeletonBox height={14} radius={10} className="w-2/3" />
+                                </View>
+                            </View>
+                            <View className="px-4 py-3.5 border-b border-gray-200/50 flex-row items-center gap-3">
+                                <View className="bg-white rounded-lg p-2.5">
+                                    <Ionicons name="cube-outline" size={18} color="#E5E7EB" />
+                                </View>
+                                <View className="flex-1">
+                                    <SkeletonBox height={10} radius={8} className="mb-2 w-1/5" />
+                                    <SkeletonBox height={14} radius={10} className="w-1/2" />
+                                </View>
+                            </View>
+                            <View className="px-4 py-3.5 flex-row items-center gap-3">
+                                <View className="bg-white rounded-lg p-2.5">
+                                    <Ionicons name="barcode-outline" size={18} color="#E5E7EB" />
+                                </View>
+                                <View className="flex-1">
+                                    <SkeletonBox height={10} radius={8} className="mb-2 w-1/4" />
+                                    <SkeletonBox height={14} radius={10} className="w-3/4" />
+                                </View>
+                            </View>
+                        </View>
+                    </View>
+                </ScrollView>
             </View>
         )
     }

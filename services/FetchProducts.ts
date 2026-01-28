@@ -59,7 +59,6 @@ export async function fetchCategories(): Promise<CategoriesResponse> {
     }
 }
 
-
 export async function fetchProductsPopular(branchName: string, limit: number = 100): Promise<ProductsPopularResponse> {
     try {
         const data = await apiFetch<ProductsPopularResponse>(API_CONFIG.ENDPOINTS.karyawan.products.popular(branchName, limit))
