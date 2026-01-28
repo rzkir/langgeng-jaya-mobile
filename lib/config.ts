@@ -40,6 +40,13 @@ export const API_CONFIG = {
         transactions: {
             base: `${API_BASE_URL}/transactions`,
             byId: (id: string | number) => `${API_BASE_URL}/transactions/${encodeURIComponent(String(id))}`,
+            list: (page: number = 1, limit: number = 10) => {
+                const params = new URLSearchParams({
+                    page: String(page),
+                    limit: String(limit),
+                });
+                return `${API_BASE_URL}/transactions?${params.toString()}`;
+            },
         },
     },
     SECRET: API_SECRET,

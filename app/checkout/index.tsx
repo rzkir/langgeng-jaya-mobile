@@ -32,6 +32,11 @@ export default function Checkout() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isScannerVisible, setScannerVisible] = useState(false);
     const [ScannerComponent, setScannerComponent] = useState<any | null>(null);
+    const [isPaymentSheetVisible, setPaymentSheetVisible] = useState(false);
+    const [customerName, setCustomerName] = useState('');
+    const [discountInput, setDiscountInput] = useState('0');
+    const [paymentMethod, setPaymentMethod] = useState<'cash' | 'kasbon'>('cash');
+    const [receivedInput, setReceivedInput] = useState('');
 
     const CUSTOM_UNITS = useMemo(() => ['kg', 'meter', 'liter'], []);
 
@@ -85,8 +90,30 @@ export default function Checkout() {
     const products = useMemo(() => productsData?.data ?? [], [productsData]);
 
     const subtotal = totalPrice;
-    const discount = 0;
+    const discount = useMemo(() => {
+        const numeric = parseInt(discountInput.replace(/[^0-9]/g, ''), 10);
+        if (Number.isNaN(numeric)) return 0;
+        return Math.min(subtotal, numeric);
+    }, [discountInput, subtotal]);
     const total = subtotal - discount;
+
+    const receivedAmount = useMemo(() => {
+        const numeric = parseInt(receivedInput.replace(/[^0-9]/g, ''), 10);
+        if (Number.isNaN(numeric)) return 0;
+        return numeric;
+    }, [receivedInput]);
+
+    const change = useMemo(() => {
+        if (receivedAmount <= 0) return 0;
+        return Math.max(receivedAmount - total, 0);
+    }, [receivedAmount, total]);
+
+    const quickAmounts = useMemo(() => {
+        const base = Math.max(total, 0);
+        const candidates = [base, base + 5000, base + 10000, 50000, 100000];
+        // hilangkan duplikat dan nilai <= 0
+        return Array.from(new Set(candidates.filter((v) => v > 0)));
+    }, [total]);
 
     const isEmpty = items.length === 0;
 
@@ -432,10 +459,10 @@ export default function Checkout() {
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            className={`flex-1 py-3 rounded-2xl items-center ${isEmpty ? 'bg-emerald-200' : 'bg-emerald-500'
-                                }`}
+                            className={`flex-1 py-3 rounded-2xl items-center ${isEmpty ? 'bg-emerald-200' : 'bg-emerald-500'}`}
                             activeOpacity={0.9}
                             disabled={isEmpty}
+                            onPress={() => setPaymentSheetVisible(true)}
                         >
                             <Text className="text-white font-semibold">Bayar</Text>
                         </TouchableOpacity>
@@ -518,6 +545,145 @@ export default function Checkout() {
                             )}
                         />
                     )}
+                </View>
+            </BottomSheets>
+
+            <BottomSheets
+                visible={isPaymentSheetVisible}
+                onClose={() => setPaymentSheetVisible(false)}
+                title="Pembayaran"
+            >
+                <View className="mt-1">
+                    <Text className="text-gray-900 text-sm mb-1">Nama pelanggan</Text>
+                    <TextInput
+                        className="w-full rounded-2xl bg-gray-100 px-3 py-2 text-gray-900"
+                        placeholder="Masukkan nama pelanggan"
+                        placeholderTextColor="#9CA3AF"
+                        value={customerName}
+                        onChangeText={setCustomerName}
+                    />
+
+                    <Text className="text-gray-900 text-sm mt-4 mb-1">Metode pembayaran</Text>
+                    <View className="flex-row gap-3">
+                        <TouchableOpacity
+                            className={`flex-1 py-2 rounded-2xl border items-center ${paymentMethod === 'cash'
+                                ? 'bg-emerald-500 border-emerald-500'
+                                : 'bg-white border-gray-200'
+                                }`}
+                            activeOpacity={0.85}
+                            onPress={() => setPaymentMethod('cash')}
+                        >
+                            <Text
+                                className={`font-semibold ${paymentMethod === 'cash' ? 'text-white' : 'text-gray-900'
+                                    }`}
+                            >
+                                Cash
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            className={`flex-1 py-2 rounded-2xl border items-center ${paymentMethod === 'kasbon'
+                                ? 'bg-emerald-500 border-emerald-500'
+                                : 'bg-white border-gray-200'
+                                }`}
+                            activeOpacity={0.85}
+                            onPress={() => setPaymentMethod('kasbon')}
+                        >
+                            <Text
+                                className={`font-semibold ${paymentMethod === 'kasbon' ? 'text-white' : 'text-gray-900'
+                                    }`}
+                            >
+                                Kasbon
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <Text className="text-gray-900 text-sm mt-4 mb-1">Diskon (Rp)</Text>
+                    <TextInput
+                        className="w-full rounded-2xl bg-gray-100 px-3 py-2 text-gray-900"
+                        placeholder="0"
+                        placeholderTextColor="#9CA3AF"
+                        keyboardType="numeric"
+                        value={discountInput}
+                        onChangeText={setDiscountInput}
+                    />
+
+                    <Text className="text-gray-900 text-sm mt-4 mb-1">Uang diterima</Text>
+                    <TextInput
+                        className="w-full rounded-2xl bg-gray-100 px-3 py-2 text-gray-900"
+                        placeholder="0"
+                        placeholderTextColor="#9CA3AF"
+                        keyboardType="numeric"
+                        value={receivedInput}
+                        onChangeText={setReceivedInput}
+                    />
+                    {quickAmounts.length > 0 && (
+                        <View className="mt-2 flex-row flex-wrap gap-2">
+                            {quickAmounts.map((amount) => (
+                                <TouchableOpacity
+                                    key={amount}
+                                    className="px-3 py-2 rounded-2xl bg-white border border-gray-200"
+                                    activeOpacity={0.85}
+                                    onPress={() => setReceivedInput(String(amount))}
+                                >
+                                    <Text className="text-gray-900 text-xs font-semibold">
+                                        {formatRupiah(amount)}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    )}
+
+                    {/* Summary pembayaran */}
+                    <View className="mt-5 rounded-2xl bg-gray-50 p-4">
+                        <View className="flex-row items-center justify-between mb-2">
+                            <Text className="text-gray-500 text-xs">Sub total</Text>
+                            <Text className="text-gray-900 font-semibold text-xs">
+                                {formatRupiah(subtotal)}
+                            </Text>
+                        </View>
+                        <View className="flex-row items-center justify-between mb-2">
+                            <Text className="text-gray-500 text-xs">Diskon</Text>
+                            <Text className="text-gray-900 font-semibold text-xs">
+                                {formatRupiah(discount)}
+                            </Text>
+                        </View>
+                        <View className="h-px bg-gray-200 my-1" />
+                        <View className="flex-row items-center justify-between mb-1">
+                            <Text className="text-gray-900 font-semibold text-sm">Total bayar</Text>
+                            <Text className="text-emerald-600 font-semibold text-sm">
+                                {formatRupiah(total)}
+                            </Text>
+                        </View>
+                        <View className="flex-row items-center justify-between mt-1">
+                            <Text className="text-gray-500 text-xs">Uang diterima</Text>
+                            <Text className="text-gray-900 font-semibold text-xs">
+                                {formatRupiah(receivedAmount)}
+                            </Text>
+                        </View>
+                        <View className="flex-row items-center justify-between mt-1">
+                            <Text className="text-gray-500 text-xs">Kembalian</Text>
+                            <Text className="text-gray-900 font-semibold text-xs">
+                                {formatRupiah(change)}
+                            </Text>
+                        </View>
+                    </View>
+
+                    <View className="mt-5 flex-row gap-3 pb-4">
+                        <TouchableOpacity
+                            className="flex-1 py-3 rounded-2xl border border-gray-200 bg-white items-center"
+                            activeOpacity={0.85}
+                            onPress={() => setPaymentSheetVisible(false)}
+                        >
+                            <Text className="text-gray-900 font-semibold">Batal</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            className="flex-1 py-3 rounded-2xl bg-emerald-500 items-center"
+                            activeOpacity={0.85}
+                            onPress={() => setPaymentSheetVisible(false)}
+                        >
+                            <Text className="text-white font-semibold">Simpan</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </BottomSheets>
 
