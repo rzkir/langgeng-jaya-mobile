@@ -59,6 +59,20 @@ export async function fetchCategories(): Promise<CategoriesResponse> {
     }
 }
 
+
+export async function fetchProductsPopular(branchName: string, limit: number = 100): Promise<ProductsPopularResponse> {
+    try {
+        const data = await apiFetch<ProductsPopularResponse>(API_CONFIG.ENDPOINTS.karyawan.products.popular(branchName, limit))
+        if (!data.success) {
+            throw new Error(data.message || "Failed to fetch products popular")
+        }
+        return data
+    } catch (error) {
+        console.error("Fetch products popular error:", error)
+        throw error instanceof Error ? error : new Error("Failed to fetch products popular")
+    }
+}
+
 export async function fetchProductDetails(id: string): Promise<ProductDetails> {
     try {
         const data = await apiFetch<ApiResponse<ProductDetails> | ProductDetails>(

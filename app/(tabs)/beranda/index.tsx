@@ -2,9 +2,11 @@ import { useAuth } from '@/context/AuthContext';
 
 import { ProductCard } from '@/components/ProductCard';
 
+import { ProductPopularCard } from '@/components/ProductPopularCard';
+
 import { DeleteModal } from '@/components/DeleteModal';
 
-import { fetchCategories, fetchKaryawanProducts } from '@/services/FetchProducts';
+import { fetchCategories, fetchKaryawanProducts, fetchProductsPopular } from '@/services/FetchProducts';
 
 import { Ionicons } from '@expo/vector-icons';
 
@@ -26,6 +28,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useCart } from '@/context/CartContext';
 
 import AntDesign from '@expo/vector-icons/AntDesign';
+
+import Toast from 'react-native-toast-message';
 
 // Helper function untuk mendapatkan icon berdasarkan nama kategori
 const getCategoryIcon = (categoryName: string): keyof typeof Ionicons.glyphMap => {
@@ -63,6 +67,18 @@ export default function Beranda() {
     const products = useMemo(() => data?.data ?? [], [data]);
 
     const {
+        data: popularData,
+        isLoading: popularLoading,
+        error: popularError,
+    } = useQuery({
+        queryKey: ['karyawan-products-popular', branchName],
+        queryFn: () => fetchProductsPopular(branchName, 10),
+        enabled: !!branchName,
+    });
+
+    const popularProducts = useMemo(() => popularData?.data ?? [], [popularData]);
+
+    const {
         data: categoriesData,
         isLoading: categoriesLoading,
         error: categoriesError,
@@ -81,6 +97,9 @@ export default function Beranda() {
 
     const errorMessage =
         error instanceof Error ? error.message : 'Gagal memuat produk';
+
+    const popularErrorMessage =
+        popularError instanceof Error ? popularError.message : 'Gagal memuat produk popular';
 
     const categoriesErrorMessage =
         categoriesError instanceof Error ? categoriesError.message : 'Gagal memuat kategori';
@@ -101,6 +120,12 @@ export default function Beranda() {
     const handleConfirmDelete = () => {
         clearCart();
         setIsConfirmVisible(false);
+        Toast.show({
+            type: 'error',
+            topOffset: 50,
+            text1: 'Keranjang dikosongkan',
+            text2: 'Semua item berhasil dihapus.',
+        });
     };
 
     return (
@@ -170,8 +195,8 @@ export default function Beranda() {
                                     key={index}
                                     className="mr-4 items-center animate-pulse"
                                 >
-                                    <View className="w-12 h-12 rounded-full bg-gray-200 mb-1" />
-                                    <View className="w-10 h-3 rounded-full bg-gray-200" />
+                                    <View className="w-14 h-14 rounded-full bg-gray-200 mb-1" />
+                                    <View className="w-14 h-4 rounded-full bg-gray-200" />
                                 </View>
                             ))}
                         </ScrollView>
@@ -267,6 +292,64 @@ export default function Beranda() {
                     )}
                 </View>
 
+                {/* Products Popular */}
+                <View className="mt-6 px-4">
+                    <View className="flex-row items-center justify-between">
+                        <Text className="text-lg font-semibold text-gray-900">
+                            Produk terlaris
+                        </Text>
+                        <TouchableOpacity onPress={() => router.push('/(tabs)/products')}>
+                            <Text className="text-sm text-blue-500 font-medium">Lihat semua</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {popularLoading && (
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{ paddingRight: 24, paddingTop: 12 }}
+                        >
+                            {Array.from({ length: 4 }).map((_, index) => (
+                                <View
+                                    key={index}
+                                    className="w-52 mr-3 bg-white rounded-3xl p-3 border border-gray-100 shadow-sm animate-pulse"
+                                >
+                                    <View className="w-full aspect-[4/3] rounded-2xl bg-gray-200 mb-3" />
+                                    <View className="w-14 h-4 rounded-full bg-gray-200 mb-3" />
+                                    <View className="w-32 h-4 rounded-full bg-gray-200 mb-2" />
+                                    <View className="w-20 h-3 rounded-full bg-gray-200 mb-3" />
+                                    <View className="w-24 h-4 rounded-full bg-gray-200" />
+                                </View>
+                            ))}
+                        </ScrollView>
+                    )}
+
+                    {popularError && !popularLoading && (
+                        <Text className="text-red-500 text-sm mt-2">
+                            {popularErrorMessage}
+                        </Text>
+                    )}
+
+                    {!popularLoading && !popularError && popularProducts?.length === 0 && (
+                        <Text className="text-gray-500 text-sm mt-2">Belum ada produk popular.</Text>
+                    )}
+
+                    {!popularLoading && !popularError && popularProducts?.length > 0 && (
+                        <FlatList
+                            data={popularProducts}
+                            keyExtractor={(item) => item.id}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{ paddingTop: 12, paddingRight: 24 }}
+                            renderItem={({ item }) => (
+                                <View className="w-52 mr-3">
+                                    <ProductPopularCard product={item} />
+                                </View>
+                            )}
+                        />
+                    )}
+                </View>
+
                 {/* Produk grid */}
                 <View className="mt-6 px-4">
                     <View className="flex-row items-center justify-between mb-3">
@@ -348,7 +431,11 @@ export default function Beranda() {
                                 <Ionicons name="trash-outline" size={20} color="#EF4444" />
                             </TouchableOpacity>
 
-                            <TouchableOpacity className="w-11 h-11 rounded-2xl bg-gray-900 items-center justify-center">
+                            <TouchableOpacity
+                                onPress={() => router.push('/checkout' as any)}
+                                className="w-11 h-11 rounded-2xl bg-gray-900 items-center justify-center"
+                                activeOpacity={0.85}
+                            >
                                 <Ionicons name="cart-outline" size={20} color="#FFFFFF" />
                             </TouchableOpacity>
                         </View>

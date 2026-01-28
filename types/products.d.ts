@@ -1,3 +1,5 @@
+// Products
+
 interface Product {
     id: string;
     price: number;
@@ -24,6 +26,31 @@ interface ApiResponse<T> {
     data: T;
     pagination?: ApiPagination;
 }
+
+// Products Popular
+interface ProductPopular {
+    id: string;
+    name: string;
+    price: number;
+    image_url: string;
+    category_name: string;
+    barcode: string;
+    branch_name: string;
+    unit: string;
+    sold: number;
+    stock: number;
+}
+
+interface ProductsPopularMeta {
+    branch_name: string;
+    limit: number;
+    total_in_branch: number;
+}
+
+interface ProductsPopularResponse extends ApiResponse<ProductPopular[]> {
+    meta: ProductsPopularMeta;
+}
+
 
 // Products Details
 interface ProductDetails {

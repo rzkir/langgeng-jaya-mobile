@@ -11,6 +11,7 @@ type CartContextValue = {
     items: CartItem[];
     addItem: (product: Product, quantity?: number) => void;
     removeItem: (productId: string) => void;
+    updateItemQuantity: (productId: string, quantity: number) => void;
     clearCart: () => void;
     totalItems: number;
     totalPrice: number;
@@ -117,6 +118,22 @@ export function CartProvider({ children }: CartProviderProps) {
         setItems((prev) => prev.filter((item) => item.product.id !== productId));
     };
 
+    const updateItemQuantity = (productId: string, quantity: number) => {
+        if (!productId) return;
+        const nextQty = Math.max(0, Math.floor(quantity));
+
+        setItems((prev) => {
+            if (nextQty <= 0) {
+                return prev.filter((item) => item.product.id !== productId);
+            }
+            const idx = prev.findIndex((item) => item.product.id === productId);
+            if (idx === -1) return prev;
+            const updated = [...prev];
+            updated[idx] = { ...updated[idx], quantity: nextQty };
+            return updated;
+        });
+    };
+
     const clearCart = () => {
         setItems([]);
     };
@@ -141,6 +158,7 @@ export function CartProvider({ children }: CartProviderProps) {
         items,
         addItem,
         removeItem,
+        updateItemQuantity,
         clearCart,
         totalItems,
         totalPrice,

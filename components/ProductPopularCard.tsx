@@ -6,24 +6,19 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { useCart } from '@/context/CartContext';
 
-import { router, usePathname } from 'expo-router';
+import { router } from 'expo-router';
 
 import Toast from 'react-native-toast-message';
 
-type ProductCardProps = {
-    product: Product | ProductPopular;
+type ProductPopularCardProps = {
+    product: ProductPopular;
 };
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductPopularCard({ product }: ProductPopularCardProps) {
     const { addItem, getItemQuantity } = useCart();
-    const pathname = usePathname();
 
     const hasImage = !!product.image_url;
     const quantityInCart = getItemQuantity(product.id);
-
-    // Tentukan halaman saat ini
-    const isProductsPage = pathname.includes('/products');
-    const isBerandaPage = pathname.includes('/beranda');
 
     const handleAddToCart = () => {
         addItem(product, 1);
@@ -36,9 +31,13 @@ export function ProductCard({ product }: ProductCardProps) {
     };
 
     return (
-        <View className="bg-white rounded-3xl p-3 mb-4 border border-gray-100 shadow-sm">
+        <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => router.push(`/products/${product.id}`)}
+            className="bg-white rounded-3xl p-3 mb-4 border border-gray-100 shadow-sm"
+        >
             {/* Gambar produk */}
-            <View className="items-center justify-center mb-3">
+            <View className="items-center justify-center mb-3 relative">
                 {hasImage ? (
                     <Image
                         source={{ uri: product.image_url }}
@@ -50,9 +49,16 @@ export function ProductCard({ product }: ProductCardProps) {
                         <Text className="text-gray-400 text-xs">No Image</Text>
                     </View>
                 )}
+
+                {/* Badge sold */}
+                <View className="absolute bottom-2 left-2 bg-gray-900/90 px-2 py-1 rounded-full">
+                    <Text className="text-white text-[10px] font-semibold">
+                        Terjual {Number(product.sold ?? 0).toLocaleString('id-ID')}
+                    </Text>
+                </View>
             </View>
 
-            {/* Badge promo / kategori */}
+            {/* Badge kategori */}
             <View className="items-start mb-2">
                 <View className="bg-red-100 px-2 py-0.5 rounded-full">
                     <Text className="text-red-500 text-[10px] font-semibold">
@@ -62,16 +68,23 @@ export function ProductCard({ product }: ProductCardProps) {
             </View>
 
             {/* Nama & unit */}
-            <View className="mb-1">
-                <Text className="text-gray-900 font-semibold text-sm" numberOfLines={1}>
+            <View className="mb-1 flex-col gap-2">
+                <Text className="text-gray-900 font-semibold text-md" numberOfLines={1}>
                     {product.name}
                 </Text>
-                <Text className="text-gray-500 text-[11px]" numberOfLines={1}>
-                    {product.unit}
-                </Text>
+
+                <View className="flex-row items-center gap-1">
+                    <Text className="text-gray-500 text-xs pr-1 border-r border-gray-200 capitalize" numberOfLines={2}>
+                        {product.unit}
+                    </Text>
+
+                    <Text className="text-gray-500 text-xs" numberOfLines={1}>
+                        Stok {product.stock}
+                    </Text>
+                </View>
             </View>
 
-            {/* Harga */}
+            {/* Harga + aksi */}
             <View className="mt-1">
                 <View className="flex-row items-center justify-between">
                     <View>
@@ -84,29 +97,16 @@ export function ProductCard({ product }: ProductCardProps) {
                             </Text>
                         )}
                     </View>
-                    <View className="flex-row gap-2">
-                        {!isProductsPage && (
-                            <TouchableOpacity
-                                className="w-9 h-9 rounded-2xl bg-gray-900 items-center justify-center"
-                                activeOpacity={0.8}
-                                onPress={handleAddToCart}
-                            >
-                                <Ionicons name="cart" size={18} color="#FFFFFF" />
-                            </TouchableOpacity>
-                        )}
-                        {!isBerandaPage && (
-                            <TouchableOpacity
-                                className="w-9 h-9 rounded-2xl bg-gray-900 items-center justify-center"
-                                activeOpacity={0.8}
-                                onPress={() => router.push(`/products/${product.id}`)}
-                            >
-                                <Ionicons name="information-circle-outline" size={18} color="#FFFFFF" />
-                            </TouchableOpacity>
-                        )}
-                    </View>
+                    <TouchableOpacity
+                        className="w-9 h-9 rounded-2xl bg-gray-900 items-center justify-center"
+                        activeOpacity={0.8}
+                        onPress={handleAddToCart}
+                    >
+                        <Ionicons name="cart" size={18} color="#FFFFFF" />
+                    </TouchableOpacity>
                 </View>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 }
 
