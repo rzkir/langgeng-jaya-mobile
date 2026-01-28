@@ -1,9 +1,15 @@
 import { useAuth } from '@/context/AuthContext';
+
 import { Ionicons } from '@expo/vector-icons';
+
 import { LinearGradient } from 'expo-linear-gradient';
+
 import { router } from 'expo-router';
+
 import React, { useState } from 'react';
+
 import {
+    Image,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -12,10 +18,14 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+
+import Logo from '@/assets/images/langgeng-jaya.png';
+
 export default function LoginScreen() {
-    const [email, setEmail] = useState('nicholas@ergemla.com');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [focusedField, setFocusedField] = useState<'identifier' | 'password' | null>(null);
 
     const { login, isLoading, error, clearError } = useAuth();
 
@@ -48,13 +58,8 @@ export default function LoginScreen() {
         console.log('Forgot password');
     };
 
-    const handleSocialLogin = (provider: 'google' | 'facebook') => {
-        // Handle social login logic here
-        console.log('Social login:', provider);
-    };
-
     return (
-        <View className="flex-1 bg-white">
+        <View className="flex-1">
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 className="flex-1"
@@ -64,9 +69,9 @@ export default function LoginScreen() {
                     showsVerticalScrollIndicator={false}
                 >
                     {/* Gradient Header Section */}
-                    <View className="relative" style={{ height: 280 }}>
+                    <View className="relative" style={{ height: 400 }}>
                         <LinearGradient
-                            colors={['#6B46C1', '#3B82F6']}
+                            colors={['#2b3784', '#2b3784']}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 1 }}
                             className="absolute inset-0"
@@ -84,37 +89,16 @@ export default function LoginScreen() {
                         />
 
                         {/* Header Content */}
-                        <View className="flex-1 px-6 pt-12">
-                            {/* Top Bar */}
-                            <View className="flex-row items-center justify-between mb-8">
-                                <TouchableOpacity
-                                    onPress={() => router.back()}
-                                    className="w-10 h-10 items-center justify-center"
-                                >
-                                    <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-                                </TouchableOpacity>
+                        <View className="flex-1 px-6 items-center justify-center">
+                            <TouchableOpacity onPress={handleGetStarted} className="absolute top-6 left-4 p-2 bg-white/10 rounded-full">
+                                <Ionicons name="arrow-back" size={24} color="white" />
+                            </TouchableOpacity>
 
-                                <View className="flex-row items-center">
-                                    <Text className="text-white text-sm mr-2">
-                                        Don&apos;t have an account?
-                                    </Text>
-                                    <TouchableOpacity
-                                        onPress={handleGetStarted}
-                                        className="px-4 py-2 bg-white/20 rounded-lg border border-white/30"
-                                    >
-                                        <Text className="text-white text-sm font-semibold">
-                                            Get Started
-                                        </Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
+                            <Image source={Logo} className="w-32 h-32" resizeMode="contain" />
 
-                            {/* App Name */}
-                            <View className="flex-1 items-center justify-center">
-                                <Text className="text-white text-4xl font-bold">
-                                    Jobsly
-                                </Text>
-                            </View>
+                            <Text className="text-white text-4xl font-bold">
+                                Langgeng Jaya
+                            </Text>
                         </View>
                     </View>
 
@@ -123,25 +107,32 @@ export default function LoginScreen() {
                         {/* Title and Subtitle */}
                         <View className="mb-8">
                             <Text className="text-3xl font-bold text-gray-900 text-center mb-2">
-                                Welcome Back
+                                Selamat Datang
                             </Text>
                             <Text className="text-base text-gray-500 text-center">
-                                Enter your details below
+                                Silahkan masukkan email / username dan password Anda
                             </Text>
                         </View>
 
                         {/* Email Input */}
                         <View className="mb-4">
-                            <Text className="text-sm text-gray-500 mb-2">Email Address</Text>
-                            <View className="border border-gray-300 rounded-xl px-4 py-3 bg-white">
+                            <Text className="text-sm text-gray-500 mb-2">Email / Username</Text>
+                            <View
+                                className="border rounded-xl px-4 py-3 bg-white"
+                                style={{
+                                    borderColor: focusedField === 'identifier' ? '#2b3784' : '#D1D5DB',
+                                }}
+                            >
                                 <TextInput
                                     value={email}
                                     onChangeText={setEmail}
-                                    placeholder="Enter your email"
+                                    placeholder="Masukkan email / username Anda"
                                     placeholderTextColor="#9CA3AF"
                                     keyboardType="email-address"
                                     autoCapitalize="none"
                                     autoCorrect={false}
+                                    onFocus={() => setFocusedField('identifier')}
+                                    onBlur={() => setFocusedField(null)}
                                     className="text-base text-gray-900"
                                 />
                             </View>
@@ -149,16 +140,23 @@ export default function LoginScreen() {
 
                         {/* Password Input */}
                         <View className="mb-6">
-                            <Text className="text-sm text-gray-500 mb-2">Password</Text>
-                            <View className="border border-gray-300 rounded-xl px-4 py-3 bg-white flex-row items-center">
+                            <Text className="text-sm text-gray-500 mb-2">Kata Sandi</Text>
+                            <View
+                                className="border rounded-xl px-4 py-3 bg-white flex-row items-center"
+                                style={{
+                                    borderColor: focusedField === 'password' ? '#2b3784' : '#D1D5DB',
+                                }}
+                            >
                                 <TextInput
                                     value={password}
                                     onChangeText={setPassword}
-                                    placeholder="Enter your password"
+                                    placeholder="Masukkan kata sandi Anda"
                                     placeholderTextColor="#9CA3AF"
                                     secureTextEntry={!showPassword}
                                     autoCapitalize="none"
                                     autoCorrect={false}
+                                    onFocus={() => setFocusedField('password')}
+                                    onBlur={() => setFocusedField(null)}
                                     className="flex-1 text-base text-gray-900"
                                 />
                                 <TouchableOpacity
@@ -186,70 +184,34 @@ export default function LoginScreen() {
                         {/* Sign In Button */}
                         <TouchableOpacity
                             onPress={handleSignIn}
-                            className={`mb-4 ${isLoading ? 'opacity-70' : ''}`}
+                            className={`mb-6 ${isLoading ? 'opacity-70' : ''}`}
                             activeOpacity={0.8}
                             disabled={isLoading}
                         >
                             <LinearGradient
-                                colors={['#8B5CF6', '#EC4899']}
+                                colors={['#2b3784', '#2b3784']}
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 1, y: 0 }}
-                                className="rounded-xl py-4 items-center justify-center"
+                                className="rounded-xl overflow-hidden py-4 items-center justify-center"
                             >
                                 <Text className="text-white text-base font-semibold">
-                                    {isLoading ? 'Signing in...' : 'Sign in'}
+                                    {isLoading ? 'Memuat...' : 'Masuk'}
                                 </Text>
                             </LinearGradient>
                         </TouchableOpacity>
 
-                        {/* Forgot Password Link */}
-                        <TouchableOpacity
-                            onPress={handleForgotPassword}
-                            className="mb-8"
-                        >
-                            <Text className="text-gray-600 text-center text-sm">
-                                Forgot your password?
-                            </Text>
-                        </TouchableOpacity>
-
-                        {/* Social Login Divider */}
-                        <View className="flex-row items-center mb-6">
+                        {/* Forgot Password Divider */}
+                        <View className="flex-row items-center gap-2">
                             <View className="flex-1 h-px bg-gray-300" />
-                            <Text className="mx-4 text-gray-400 text-sm">
-                                Or sign in with
-                            </Text>
-                            <View className="flex-1 h-px bg-gray-300" />
-                        </View>
-
-                        {/* Social Login Buttons */}
-                        <View className="flex-row gap-4">
-                            {/* Google Button */}
+                            {/* Forgot Password Link */}
                             <TouchableOpacity
-                                onPress={() => handleSocialLogin('google')}
-                                className="flex-1 border border-gray-300 rounded-xl py-4 flex-row items-center justify-center bg-white"
-                                activeOpacity={0.7}
+                                onPress={handleForgotPassword}
                             >
-                                <View className="w-6 h-6 items-center justify-center mr-2">
-                                    <Text className="text-lg font-bold" style={{ color: '#4285F4' }}>
-                                        G
-                                    </Text>
-                                </View>
-                                <Text className="text-gray-700 text-base font-medium">
-                                    Google
+                                <Text className="text-gray-600 text-center text-sm">
+                                    Lupa kata sandi?
                                 </Text>
                             </TouchableOpacity>
-
-                            {/* Facebook Button */}
-                            <TouchableOpacity
-                                onPress={() => handleSocialLogin('facebook')}
-                                className="flex-1 border border-gray-300 rounded-xl py-4 flex-row items-center justify-center bg-white"
-                                activeOpacity={0.7}
-                            >
-                                <Ionicons name="logo-facebook" size={20} color="#1877F2" />
-                                <Text className="text-gray-700 text-base font-medium ml-2">
-                                    Facebook
-                                </Text>
-                            </TouchableOpacity>
+                            <View className="flex-1 h-px bg-gray-300" />
                         </View>
                     </View>
                 </ScrollView>

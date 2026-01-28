@@ -16,48 +16,10 @@ import {
     View
 } from 'react-native';
 
-import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { onboardingData } from '@/assets/data/Data';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-interface OnboardingSlide {
-    id: number;
-    icon: keyof typeof Ionicons.glyphMap;
-    title: string;
-    description: string;
-    color: string;
-}
-
-const onboardingData: OnboardingSlide[] = [
-    {
-        id: 1,
-        icon: 'storefront',
-        title: 'Kelola Produk dengan Mudah',
-        description: 'Tambah, edit, dan kelola produk Anda dengan cepat dan efisien. Pantau stok barang secara real-time.',
-        color: '#FF9228'
-    },
-    {
-        id: 2,
-        icon: 'receipt',
-        title: 'Transaksi Cepat & Akurat',
-        description: 'Proses transaksi penjualan dengan cepat. Cetak struk langsung dari aplikasi untuk kemudahan Anda.',
-        color: '#10B981'
-    },
-    {
-        id: 3,
-        icon: 'analytics',
-        title: 'Laporan Lengkap',
-        description: 'Dapatkan insight bisnis Anda dengan laporan penjualan, stok, dan keuntungan yang detail dan real-time.',
-        color: '#3B82F6'
-    },
-    {
-        id: 4,
-        icon: 'phone-portrait',
-        title: 'Akses Dimana Saja',
-        description: 'Akses aplikasi POS Anda kapan saja dan dimana saja. Kelola bisnis Anda dengan mudah dari smartphone.',
-        color: '#8B5CF6'
-    }
-];
 
 export default function WelcomeScreen() {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -105,7 +67,7 @@ export default function WelcomeScreen() {
                     className="w-32 h-32 rounded-full items-center justify-center mb-8"
                     style={{ backgroundColor: `${item.color}20` }}
                 >
-                    <Ionicons name={item.icon} size={64} color={item.color} />
+                    <Ionicons name={item.icon as keyof typeof Ionicons.glyphMap} size={64} color={item.color} />
                 </View>
 
                 {/* Title */}
@@ -122,10 +84,10 @@ export default function WelcomeScreen() {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+        <View className="flex-1">
             {/* Skip Button */}
             {currentIndex < onboardingData.length - 1 && (
-                <View className="absolute top-12 right-6 z-10">
+                <View className="absolute top-4 right-4 z-10">
                     <TouchableOpacity
                         onPress={handleSkip}
                         className="px-4 py-2"
@@ -161,7 +123,7 @@ export default function WelcomeScreen() {
                         <View
                             key={index}
                             className={`h-2 rounded-full mx-1 ${index === currentIndex
-                                ? 'bg-primary w-8'
+                                ? 'bg-[#2b3784] w-8'
                                 : 'bg-gray-300 w-2'
                                 }`}
                         />
@@ -188,15 +150,7 @@ export default function WelcomeScreen() {
                     {/* Next/Get Started Button */}
                     <TouchableOpacity
                         onPress={handleNext}
-                        className="flex-row items-center px-8 py-3 rounded-xl"
-                        style={{
-                            backgroundColor: '#FF9228',
-                            shadowColor: '#FF9228',
-                            shadowOffset: { width: 0, height: 4 },
-                            shadowOpacity: 0.3,
-                            shadowRadius: 4,
-                            elevation: 4,
-                        }}
+                        className="flex-row items-center px-8 py-3 rounded-xl bg-[#2b3784] shadow-lg shadow-black/10"
                     >
                         <Text className="text-base font-semibold mr-2 text-white">
                             {currentIndex === onboardingData.length - 1 ? 'Mulai' : 'Selanjutnya'}
@@ -209,6 +163,6 @@ export default function WelcomeScreen() {
                     </TouchableOpacity>
                 </View>
             </View>
-        </SafeAreaView>
+        </View>
     );
 }

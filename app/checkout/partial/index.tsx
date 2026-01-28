@@ -28,6 +28,8 @@ export default function CheckoutSuccess() {
     const total = Number(params.total || 0);
     const receivedAmount = Number(params.receivedAmount || 0);
     const change = Number(params.change || 0);
+    const paidAmount = useMemo(() => Math.min(receivedAmount || 0, total || 0), [receivedAmount, total]);
+    const amountDue = useMemo(() => Math.max((total || 0) - paidAmount, 0), [total, paidAmount]);
     const transactionNumber = params.transactionNumber || '-';
     const customerName = params.customerName || '-';
     const cashierName = params.cashierName || '-';
@@ -35,8 +37,10 @@ export default function CheckoutSuccess() {
     const formattedTotal = formatRupiah(Number.isFinite(total) ? total : 0);
     const formattedReceivedAmount = formatRupiah(Number.isFinite(receivedAmount) ? receivedAmount : 0);
     const formattedChange = formatRupiah(Number.isFinite(change) ? change : 0);
-    // Halaman ini khusus untuk transaksi yang sudah paid (cash)
-    const paymentMethodText = 'Cash';
+    const formattedAmountDue = formatRupiah(Number.isFinite(amountDue) ? amountDue : 0);
+    // Halaman ini khusus untuk transaksi kasbon, jadi statusnya sudah pasti partial
+    const paymentMethodText = 'Kasbon';
+    const paymentStatusText = 'Partial';
 
     const transactionItems: TransactionItemPayload[] = useMemo(() => {
         if (params.transactionItems && typeof params.transactionItems === 'string') {
@@ -63,6 +67,8 @@ export default function CheckoutSuccess() {
                 formattedTotal,
                 formattedReceivedAmount,
                 formattedChange,
+                formattedAmountDue,
+                isCredit: true,
                 items: transactionItems,
                 formatRupiah,
             });
@@ -82,6 +88,7 @@ export default function CheckoutSuccess() {
         formattedTotal,
         formattedReceivedAmount,
         formattedChange,
+        formattedAmountDue,
     ]);
 
     const handlePrint = useCallback(() => {
@@ -117,8 +124,8 @@ export default function CheckoutSuccess() {
                             </Text>
                             <Text className="text-gray-900 font-semibold mt-1">Details</Text>
                         </View>
-                        <View className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100">
-                            <Text className="text-emerald-600 text-xs font-semibold">Paid</Text>
+                        <View className="px-3 py-1 rounded-full border bg-amber-50 border-amber-100">
+                            <Text className="text-xs font-semibold text-amber-700">{paymentStatusText}</Text>
                         </View>
                     </View>
 
@@ -152,6 +159,18 @@ export default function CheckoutSuccess() {
                         </Text>
                     </View>
 
+                    <View className="flex-row items-center justify-between mb-2">
+                        <View>
+                            <Text className="text-gray-400 text-xs uppercase tracking-widest">Payment Status</Text>
+                        </View>
+                        <Text
+                            className="text-sm font-semibold text-amber-700"
+                            numberOfLines={1}
+                        >
+                            {paymentStatusText}
+                        </Text>
+                    </View>
+
                     <View className="h-px bg-gray-100 my-1" />
 
                     {/* Amount breakdown */}
@@ -172,8 +191,8 @@ export default function CheckoutSuccess() {
                         </View>
 
                         <View className="flex-row items-center justify-between">
-                            <Text className="text-gray-500 text-sm">Kembalian</Text>
-                            <Text className="text-gray-900 text-sm font-semibold">{formattedChange}</Text>
+                            <Text className="text-gray-500 text-sm">Jumlah yang harus dibayar</Text>
+                            <Text className="text-gray-900 text-sm font-semibold">{formattedAmountDue}</Text>
                         </View>
                     </View>
 

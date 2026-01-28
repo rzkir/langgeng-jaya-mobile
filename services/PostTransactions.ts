@@ -1,36 +1,5 @@
 import { API_CONFIG } from '@/lib/config';
 
-export type TransactionItemPayload = {
-    product_id: string;
-    product_name: string;
-    image_url?: string | null;
-    quantity: number;
-    price: number;
-    subtotal: number;
-    unit?: string | null;
-};
-
-export type CreateTransactionPayload = {
-    customer_name: string;
-    created_by?: string;
-    subtotal: number;
-    tax?: number;
-    total: number;
-    discount: number;
-    paid_amount: number;
-    is_credit: boolean;
-    branch_name: string;
-    payment_method: 'cash' | 'kasbon';
-    status?: 'pending' | 'completed';
-    items: TransactionItemPayload[];
-};
-
-export type TransactionResponse<TData = any> = {
-    success: boolean;
-    message?: string;
-    data?: TData;
-};
-
 export async function postTransaction<TData = any>(
     payload: CreateTransactionPayload,
 ): Promise<TransactionResponse<TData>> {
