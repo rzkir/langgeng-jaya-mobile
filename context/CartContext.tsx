@@ -120,7 +120,10 @@ export function CartProvider({ children }: CartProviderProps) {
 
     const updateItemQuantity = (productId: string, quantity: number) => {
         if (!productId) return;
-        const nextQty = Math.max(0, Math.floor(quantity));
+
+        const rawQty = Number.isFinite(quantity) ? quantity : Number(quantity);
+        const safeQty = Number.isFinite(rawQty) && !Number.isNaN(rawQty) ? rawQty : 0;
+        const nextQty = Math.max(0, safeQty);
 
         setItems((prev) => {
             if (nextQty <= 0) {

@@ -38,7 +38,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (Platform.OS === 'android') {
-      SystemUI.setBackgroundColorAsync('#FF9228').catch(() => { });
+      SystemUI.setBackgroundColorAsync('transparent').catch(() => { });
     }
 
     (async () => {
@@ -61,7 +61,7 @@ export default function RootLayout() {
             name: 'Default',
             importance: Notifications.AndroidImportance.MAX,
             vibrationPattern: [0, 250, 250, 250],
-            lightColor: '#FF9228',
+            lightColor: 'transparent',
             sound: 'default',
           }).catch(() => { });
 
@@ -69,7 +69,7 @@ export default function RootLayout() {
             name: 'Low Stock Alerts',
             importance: Notifications.AndroidImportance.HIGH,
             vibrationPattern: [0, 250, 250, 250],
-            lightColor: '#FF9228',
+            lightColor: 'transparent',
             sound: 'default',
           }).catch(() => { });
         }

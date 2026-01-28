@@ -1,7 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { router } from 'expo-router';
+
 import React, { useRef, useState } from 'react';
+
 import {
     Dimensions,
     FlatList,
@@ -11,6 +15,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');

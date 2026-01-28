@@ -23,6 +23,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
     // Tentukan halaman saat ini
     const isProductsPage = pathname.includes('/products');
+    const isCheckoutPage = pathname.includes('/checkout');
     const isBerandaPage = pathname.includes('/beranda');
 
     const handleAddToCart = () => {
@@ -42,7 +43,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 {hasImage ? (
                     <Image
                         source={{ uri: product.image_url }}
-                        className="w-full aspect-[4/3] rounded-2xl"
+                        className="w-full aspect-[4/4] rounded-2xl"
                         resizeMode="cover"
                     />
                 ) : (
@@ -94,7 +95,7 @@ export function ProductCard({ product }: ProductCardProps) {
                                 <Ionicons name="cart" size={18} color="#FFFFFF" />
                             </TouchableOpacity>
                         )}
-                        {!isBerandaPage && (
+                        {!isBerandaPage && !isCheckoutPage && (
                             <TouchableOpacity
                                 className="w-9 h-9 rounded-2xl bg-gray-900 items-center justify-center"
                                 activeOpacity={0.8}
