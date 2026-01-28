@@ -17,6 +17,7 @@ import { useCart } from '@/context/CartContext';
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchKaryawanProducts } from '@/services/FetchProducts';
+import { postTransaction } from '@/services/PostTransactions';
 
 function formatRupiah(value: number) {
     return `Rp ${Math.max(0, Math.round(value)).toLocaleString('id-ID')}`;
@@ -37,6 +38,7 @@ export default function Checkout() {
     const [discountInput, setDiscountInput] = useState('0');
     const [paymentMethod, setPaymentMethod] = useState<'cash' | 'kasbon'>('cash');
     const [receivedInput, setReceivedInput] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const CUSTOM_UNITS = useMemo(() => ['kg', 'meter', 'liter'], []);
 
@@ -95,7 +97,8 @@ export default function Checkout() {
         if (Number.isNaN(numeric)) return 0;
         return Math.min(subtotal, numeric);
     }, [discountInput, subtotal]);
-    const total = subtotal - discount;
+    const subtotalAfterDiscount = useMemo(() => Math.max(0, subtotal - discount), [subtotal, discount]);
+    const total = subtotalAfterDiscount;
 
     const receivedAmount = useMemo(() => {
         const numeric = parseInt(receivedInput.replace(/[^0-9]/g, ''), 10);
@@ -116,6 +119,107 @@ export default function Checkout() {
     }, [total]);
 
     const isEmpty = items.length === 0;
+
+    const paidAmount = useMemo(() => {
+        // Mengikuti logika di web: kalau bukan kasbon, paid = total; kalau kasbon, pakai nilai input (maksimal total)
+        if (paymentMethod !== 'kasbon') {
+            return total;
+        }
+        return Math.min(receivedAmount || 0, total);
+    }, [paymentMethod, receivedAmount, total]);
+
+    const handleSubmitTransaction = useCallback(async () => {
+        if (isEmpty) {
+            Alert.alert('Keranjang kosong', 'Tambahkan produk terlebih dahulu.');
+            return;
+        }
+
+        if (paymentMethod === 'kasbon' && !customerName.trim()) {
+            Alert.alert('Nama pelanggan wajib', 'Masukkan nama pelanggan untuk transaksi kasbon.');
+            return;
+        }
+
+        if (total <= 0) {
+            Alert.alert('Total tidak valid', 'Total pembayaran harus lebih dari 0.');
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            const transactionItems = items.map((cartItem) => ({
+                product_id: String(cartItem.product.id),
+                product_name: cartItem.product.name,
+                image_url: cartItem.product.image_url,
+                quantity: cartItem.quantity,
+                price: cartItem.product.price,
+                subtotal: cartItem.product.price * cartItem.quantity,
+                unit: cartItem.product.unit,
+            }));
+
+            const response = await postTransaction({
+                customer_name: customerName || '',
+                created_by: user?.name || '',
+                subtotal: subtotalAfterDiscount,
+                tax: 0,
+                total,
+                discount,
+                paid_amount: paidAmount,
+                is_credit: paymentMethod === 'kasbon',
+                branch_name: branchName,
+                payment_method: paymentMethod,
+                status: paymentMethod === 'kasbon' ? 'pending' : 'completed',
+                items: transactionItems,
+            });
+
+            clearCart();
+            setCustomerName('');
+            setDiscountInput('0');
+            setPaymentMethod('cash');
+            setReceivedInput('');
+            setPaymentSheetVisible(false);
+
+            const transactionNumber =
+                (response as any)?.data?.transaction_number || (response as any)?.data?.id || '';
+
+            router.push({
+                pathname: '/checkout/success',
+                params: {
+                    total: String(total),
+                    transactionNumber,
+                    paymentMethod,
+                    receivedAmount: String(receivedAmount),
+                    change: String(change),
+                    customerName: customerName || '',
+                    cashierName: user?.name || '',
+                    branchName,
+                    transactionItems: JSON.stringify(transactionItems),
+                },
+            } as any);
+        } catch (err) {
+            console.error('Gagal membuat transaksi:', err);
+            Alert.alert(
+                'Gagal membuat transaksi',
+                err instanceof Error ? err.message : 'Terjadi kesalahan, silakan coba lagi.',
+            );
+        } finally {
+            setIsSubmitting(false);
+        }
+    }, [
+        isEmpty,
+        paymentMethod,
+        customerName,
+        total,
+        items,
+        subtotalAfterDiscount,
+        discount,
+        paidAmount,
+        receivedAmount,
+        change,
+        branchName,
+        user?.name,
+        clearCart,
+    ]);
 
     const lines = useMemo(() => {
         return items.map((it) => ({
@@ -677,11 +781,15 @@ export default function Checkout() {
                             <Text className="text-gray-900 font-semibold">Batal</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            className="flex-1 py-3 rounded-2xl bg-emerald-500 items-center"
+                            className={`flex-1 py-3 rounded-2xl items-center ${isSubmitting ? 'bg-emerald-300' : 'bg-emerald-500'
+                                }`}
                             activeOpacity={0.85}
-                            onPress={() => setPaymentSheetVisible(false)}
+                            disabled={isSubmitting}
+                            onPress={handleSubmitTransaction}
                         >
-                            <Text className="text-white font-semibold">Simpan</Text>
+                            <Text className="text-white font-semibold">
+                                {isSubmitting ? 'Menyimpan...' : 'Simpan'}
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 </View>
