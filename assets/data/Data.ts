@@ -28,3 +28,33 @@ export const onboardingData: OnboardingSlide[] = [
         color: '#8B5CF6'
     }
 ];
+
+export const STATUS_STYLES: Record<
+    BadgeStatus,
+    {
+        container: string;
+        text: string;
+        defaultLabel: string;
+    }
+> = {
+    success: {
+        container: 'bg-emerald-100',
+        text: 'text-emerald-700',
+        defaultLabel: 'Success',
+    },
+    failed: {
+        container: 'bg-red-100',
+        text: 'text-red-700',
+        defaultLabel: 'Failed',
+    },
+    pending: {
+        container: 'bg-amber-100',
+        text: 'text-amber-700',
+        defaultLabel: 'Pending',
+    },
+    canceled: {
+        container: 'bg-gray-100',
+        text: 'text-gray-700',
+        defaultLabel: 'Canceled',
+    },
+};

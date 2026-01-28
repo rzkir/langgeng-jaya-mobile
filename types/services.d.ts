@@ -30,3 +30,35 @@ type BuildStrukOptions = {
     items: TransactionItemPayload[];
     formatRupiah: (value: number) => string;
 };
+
+//====================== Badge ======================//
+type BadgeStatus = 'success' | 'failed' | 'pending' | 'canceled';
+
+type BadgeProps = {
+    status: BadgeStatus;
+    label?: string;
+    className?: string;
+};
+
+//====================== Success Screen State ======================//
+type UseStateSuccessResult = {
+    total: number;
+    receivedAmount: number;
+    change: number;
+
+    transactionNumber: string;
+    customerName: string;
+    cashierName: string;
+    branchName: string;
+
+    formattedTotal: string;
+    formattedReceivedAmount: string;
+    formattedChange: string;
+
+    paymentMethodText: string;
+
+    transactionItems: TransactionItemPayload[];
+
+    handleShare: () => Promise<void>;
+    handlePrint: () => void;
+};

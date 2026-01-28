@@ -1,14 +1,16 @@
 import React from 'react';
 
-import { FlatList, Image, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 
 import { router } from 'expo-router';
 
-import BottomSheets from '@/components/BottomSheets';
+import AddProducts from '@/components/checkout/checkout/AddProducts';
 
-import { ProductCard } from '@/components/ProductCard';
+import Payment from '@/components/checkout/checkout/Payment';
+
+import Scanner from '@/components/checkout/checkout/Scanner';
 
 import { useStateCheckout } from '@/services/useStateCheckout';
 
@@ -67,53 +69,57 @@ export default function Checkout() {
     } = useStateCheckout();
 
     return (
-        <View className="flex-1 bg-white">
+        <View className="flex-1">
             {/* Header */}
-            <View className="px-4 pt-4 pb-3 flex-row items-center justify-between">
+            <View className="pt-4 pb-3 flex-row items-center justify-between border-b border-gray-200 mx-4">
                 <TouchableOpacity
                     onPress={() => router.back()}
-                    className="w-11 h-11 rounded-2xl bg-gray-100 items-center justify-center"
+                    className="w-11 h-11 rounded-2xl bg-white border border-gray-200 items-center justify-center"
                     activeOpacity={0.85}
                 >
                     <Ionicons name="chevron-back" size={20} color="#111827" />
                 </TouchableOpacity>
 
                 <View className="flex-1 items-center">
-                    <Text className="text-gray-900 font-semibold text-base">Checkout</Text>
-                    <Text className="text-gray-400 text-xs">{totalItems} item</Text>
+                    <Text className="text-gray-900 font-semibold text-[16px] tracking-tight">Checkout</Text>
+                    <View className="mt-1 px-2 py-1 rounded-full bg-white border border-gray-200">
+                        <Text className="text-gray-600 text-[11px] font-medium">{totalItems} item</Text>
+                    </View>
                 </View>
 
                 <TouchableOpacity
                     onPress={clearCart}
-                    className="w-11 h-11 rounded-2xl bg-red-50 items-center justify-center"
+                    className={`w-11 h-11 rounded-2xl items-center justify-center border ${isEmpty ? 'bg-white border-gray-200' : 'bg-red-50 border-red-100'}`}
                     activeOpacity={0.85}
                     disabled={isEmpty}
                 >
-                    <Ionicons name="trash-outline" size={20} color={isEmpty ? '#FCA5A5' : '#EF4444'} />
+                    <Ionicons name="trash-outline" size={20} color={isEmpty ? '#9CA3AF' : '#EF4444'} />
                 </TouchableOpacity>
             </View>
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 170 }}
-                className="px-4"
+                className="px-4 mt-2"
+                contentContainerStyle={{ paddingBottom: 220 }}
             >
                 {/* Cart items */}
                 {isEmpty ? (
-                    <View className="mt-10 items-center">
-                        <View className="w-16 h-16 rounded-3xl bg-gray-100 items-center justify-center">
-                            <Ionicons name="cart-outline" size={28} color="#9CA3AF" />
+                    <View className="mt-12 items-center px-6">
+                        <View className="w-20 h-20 rounded-3xl bg-white border border-gray-200 items-center justify-center">
+                            <Ionicons name="cart-outline" size={30} color="#6B7280" />
                         </View>
-                        <Text className="text-gray-900 font-semibold mt-4">Keranjang kosong</Text>
-                        <Text className="text-gray-500 text-sm mt-1 text-center">
+                        <Text className="text-gray-900 font-semibold mt-5 text-[16px] tracking-tight">Keranjang kosong</Text>
+
+                        <Text className="text-gray-600 text-[13px] mt-2 text-center leading-5">
                             Tambahkan produk dulu, lalu kembali ke sini untuk checkout.
                         </Text>
+
                         <TouchableOpacity
-                            onPress={() => router.push('/(tabs)/beranda' as any)}
+                            onPress={() => setAddItemSheetVisible(true)}
                             className="mt-5 px-5 py-3 rounded-2xl bg-gray-900"
                             activeOpacity={0.9}
                         >
-                            <Text className="text-white font-semibold">Kembali belanja</Text>
+                            <Text className="text-white font-semibold">Pilih Produk</Text>
                         </TouchableOpacity>
                     </View>
                 ) : (
@@ -123,11 +129,11 @@ export default function Checkout() {
                             return (
                                 <View
                                     key={item.id}
-                                    className="bg-white border border-gray-100 shadow-sm rounded-3xl p-3 mb-4"
+                                    className="bg-white border border-gray-200 shadow-sm rounded-3xl p-4 mb-4"
                                 >
                                     <View className="flex-row">
                                         {/* image */}
-                                        <View className="w-20 h-20 rounded-2xl bg-gray-100 overflow-hidden">
+                                        <View className="w-20 h-20 rounded-2xl bg-gray-100 overflow-hidden border border-gray-100">
                                             {hasImage ? (
                                                 <Image
                                                     source={{ uri: item.image_url }}
@@ -136,7 +142,8 @@ export default function Checkout() {
                                                 />
                                             ) : (
                                                 <View className="w-full h-full items-center justify-center">
-                                                    <Text className="text-gray-400 text-[10px]">No Image</Text>
+                                                    <Ionicons name="image-outline" size={18} color="#9CA3AF" />
+                                                    <Text className="text-gray-400 text-[10px] mt-1">No image</Text>
                                                 </View>
                                             )}
                                         </View>
@@ -145,17 +152,19 @@ export default function Checkout() {
                                         <View className="flex-1 ml-3">
                                             <View className="flex-row items-start justify-between">
                                                 <View className="flex-1 pr-2">
-                                                    <Text className="text-gray-900 font-semibold text-sm" numberOfLines={1}>
+                                                    <Text className="text-gray-900 font-semibold text-[14px] tracking-tight" numberOfLines={1}>
                                                         {item.name}
                                                     </Text>
-                                                    <Text className="text-gray-500 text-[11px]" numberOfLines={1}>
-                                                        {item.unit}
-                                                    </Text>
+                                                    <View className="mt-1 self-start px-2 py-1 rounded-full bg-gray-50 border border-gray-200">
+                                                        <Text className="text-gray-600 text-[11px] font-medium" numberOfLines={1}>
+                                                            {item.unit}
+                                                        </Text>
+                                                    </View>
                                                 </View>
 
                                                 <TouchableOpacity
                                                     onPress={() => removeItem(item.id)}
-                                                    className="w-9 h-9 rounded-2xl bg-red-50 items-center justify-center"
+                                                    className="w-10 h-10 rounded-2xl bg-white border border-gray-200 items-center justify-center"
                                                     activeOpacity={0.85}
                                                 >
                                                     <Ionicons name="trash-outline" size={18} color="#EF4444" />
@@ -163,13 +172,16 @@ export default function Checkout() {
                                             </View>
 
                                             <View className="mt-3 flex-row items-center justify-between">
-                                                <Text className="text-gray-900 font-semibold text-base">
-                                                    {formatRupiah(item.price)}
-                                                </Text>
+                                                <View>
+                                                    <Text className="text-gray-500 text-[11px]">Harga</Text>
+                                                    <Text className="text-gray-900 font-semibold text-[16px] tracking-tight mt-0.5">
+                                                        {formatRupiah(item.price)}
+                                                    </Text>
+                                                </View>
 
                                                 {/* stepper / input quantity */}
                                                 {isCustomUnit(item.unit) ? (
-                                                    <View className="flex-row items-center bg-gray-100 rounded-2xl px-2 py-2">
+                                                    <View className="flex-row items-center bg-gray-50 border border-gray-200 rounded-2xl px-2 py-2">
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 const step = 0.1;
@@ -181,14 +193,14 @@ export default function Checkout() {
                                                                     [item.id]: String(normalized),
                                                                 }));
                                                             }}
-                                                            className="w-8 h-8 rounded-xl bg-white items-center justify-center"
+                                                            className="w-9 h-9 rounded-xl bg-white border border-gray-200 items-center justify-center"
                                                             activeOpacity={0.85}
                                                         >
                                                             <Ionicons name="remove" size={18} color="#111827" />
                                                         </TouchableOpacity>
 
                                                         <TextInput
-                                                            className="mx-1 w-16 text-gray-900 font-semibold text-center px-2 py-1 rounded-xl bg-white"
+                                                            className="mx-2 w-16 text-gray-900 font-semibold text-center px-2 py-2 rounded-xl bg-white border border-gray-200"
                                                             keyboardType="decimal-pad"
                                                             value={
                                                                 customQuantities[item.id] !== undefined
@@ -223,6 +235,7 @@ export default function Checkout() {
                                                                 }
                                                             }}
                                                             placeholder="Qty"
+                                                            placeholderTextColor="#9CA3AF"
                                                         />
 
                                                         <TouchableOpacity
@@ -236,33 +249,33 @@ export default function Checkout() {
                                                                     [item.id]: String(normalized),
                                                                 }));
                                                             }}
-                                                            className="w-8 h-8 rounded-xl bg-emerald-500 items-center justify-center"
+                                                            className="w-9 h-9 rounded-xl bg-gray-900 items-center justify-center"
                                                             activeOpacity={0.85}
                                                         >
                                                             <Ionicons name="add" size={18} color="#FFFFFF" />
                                                         </TouchableOpacity>
                                                     </View>
                                                 ) : (
-                                                    <View className="flex-row items-center bg-gray-100 rounded-2xl px-2 py-2">
+                                                    <View className="flex-row items-center bg-gray-50 border border-gray-200 rounded-2xl px-2 py-2">
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 updateItemQuantity(item.id, item.quantity - 1);
                                                             }}
-                                                            className="w-8 h-8 rounded-xl bg-white items-center justify-center"
+                                                            className="w-9 h-9 rounded-xl bg-white border border-gray-200 items-center justify-center"
                                                             activeOpacity={0.85}
                                                         >
                                                             <Ionicons name="remove" size={18} color="#111827" />
                                                         </TouchableOpacity>
 
-                                                        <Text className="mx-3 text-gray-900 font-semibold min-w-[18px] text-center">
-                                                            {item.quantity}
-                                                        </Text>
+                                                        <View className="mx-3 min-w-[22px] items-center">
+                                                            <Text className="text-gray-900 font-semibold text-[14px]">{item.quantity}</Text>
+                                                        </View>
 
                                                         <TouchableOpacity
                                                             onPress={() => {
                                                                 updateItemQuantity(item.id, item.quantity + 1);
                                                             }}
-                                                            className="w-8 h-8 rounded-xl bg-emerald-500 items-center justify-center"
+                                                            className="w-9 h-9 rounded-xl bg-gray-900 items-center justify-center"
                                                             activeOpacity={0.85}
                                                         >
                                                             <Ionicons name="add" size={18} color="#FFFFFF" />
@@ -280,307 +293,100 @@ export default function Checkout() {
             </ScrollView>
 
             {/* Summary + actions */}
-            <View className="absolute bottom-0 left-0 right-0 px-5 pb-6">
-                <View className="bg-white rounded-3xl border border-gray-100 shadow-xl p-5">
-                    <View className="flex-row items-center justify-between mb-2">
-                        <Text className="text-gray-500 text-sm">Sub total :</Text>
-                        <Text className="text-gray-900 font-semibold text-sm">{formatRupiah(subtotal)}</Text>
+            <View className="absolute bottom-0 left-0 right-0 px-4 pb-6">
+                <View className="bg-white/95 rounded-[28px] border border-gray-200 shadow-xl p-5">
+                    <View className="flex-row items-center justify-between mb-4">
+                        <View>
+                            <Text className="text-gray-500 text-[11px]">Ringkasan</Text>
+                            <Text className="text-gray-900 font-semibold text-[15px] tracking-tight mt-0.5">
+                                Total pembayaran
+                            </Text>
+                        </View>
+                        <View className="px-3 py-2 rounded-2xl bg-emerald-50 bo3der border-emerald-100">
+                            <Text className="text-emerald-700 font-semibold text-[13px]">
+                                {formatRupiah(total)}
+                            </Text>
+                        </View>
+                    </View>
+
+                    <View className="flex-row items-center justify-between mb-3">
+                        <Text className="text-gray-600 text-[13px]">Sub total</Text>
+                        <Text className="text-gray-900 font-semibold text-[13px]">{formatRupiah(subtotal)}</Text>
                     </View>
                     <View className="flex-row items-center justify-between mb-3">
-                        <Text className="text-gray-500 text-sm">Discount :</Text>
-                        <Text className="text-gray-900 font-semibold text-sm">{formatRupiah(discount)}</Text>
+                        <Text className="text-gray-600 text-[13px]">Diskon</Text>
+                        <Text className="text-gray-900 font-semibold text-[13px]">{formatRupiah(discount)}</Text>
                     </View>
 
-                    <View className="h-px bg-gray-100 mb-3" />
-
-                    <View className="flex-row items-center justify-between mb-4">
-                        <Text className="text-gray-900 font-semibold text-sm">total :</Text>
-                        <Text className="text-gray-900 font-semibold text-sm">{formatRupiah(total)}</Text>
-                    </View>
+                    <View className="h-px bg-gray-200/70 mb-4" />
 
                     <View className="flex-row items-center gap-3">
                         <TouchableOpacity
-                            className="flex-1 py-3 rounded-2xl border border-gray-200 bg-white items-center"
+                            className="flex-1 py-3 rounded-2xl border border-gray-200 bg-white items-center flex-row justify-center gap-2"
                             activeOpacity={0.9}
                             disabled={isEmpty}
                             onPress={() => setAddItemSheetVisible(true)}
                         >
+                            <Ionicons name="add-circle-outline" size={18} color="#111827" />
                             <Text className="text-gray-900 font-semibold">Tambah item</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            className={`flex-1 py-3 rounded-2xl items-center ${isEmpty ? 'bg-emerald-200' : 'bg-emerald-500'}`}
+                            className={`flex-1 py-3 rounded-2xl items-center flex-row justify-center gap-2 ${isEmpty ? 'bg-gray-300' : 'bg-gray-900'}`}
                             activeOpacity={0.9}
                             disabled={isEmpty}
                             onPress={() => setPaymentSheetVisible(true)}
                         >
+                            <Ionicons name="wallet-outline" size={18} color="#FFFFFF" />
                             <Text className="text-white font-semibold">Bayar</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
             </View>
 
-            <BottomSheets
+            {/* Bottomsheets For Add Products + Scan */}
+            <AddProducts
                 visible={isAddItemSheetVisible}
                 onClose={() => setAddItemSheetVisible(false)}
-                title="Tambah item"
-            >
-                <View className="mt-1 max-h-[500px]">
-                    {/* Search & Scan */}
-                    <View className="flex-row items-center mb-3 gap-2">
-                        <View className="flex-1 flex-row items-center bg-gray-100 rounded-2xl px-3">
-                            <Ionicons name="search-outline" size={18} color="#6B7280" />
-                            <TextInput
-                                className="flex-1 ml-2 py-2 text-gray-900"
-                                placeholder="Cari nama / barcode produk"
-                                placeholderTextColor="#9CA3AF"
-                                value={searchQuery}
-                                onChangeText={setSearchQuery}
-                            />
-                        </View>
+                searchQuery={searchQuery}
+                onChangeSearchQuery={setSearchQuery}
+                isProductsLoading={isProductsLoading}
+                productsError={productsError}
+                products={products}
+                filteredProducts={filteredProducts}
+                onPressScan={handleOpenScanner}
+            />
 
-                        <TouchableOpacity
-                            className="w-11 h-11 rounded-2xl bg-gray-900 items-center justify-center"
-                            activeOpacity={0.85}
-                            onPress={handleOpenScanner}
-                        >
-                            <Ionicons name="scan-outline" size={20} color="#FFFFFF" />
-                        </TouchableOpacity>
-                    </View>
-
-                    {isProductsLoading && (
-                        <FlatList
-                            data={Array.from({ length: 6 }, (_, i) => i.toString())}
-                            keyExtractor={(item) => item}
-                            showsVerticalScrollIndicator={false}
-                            numColumns={2}
-                            columnWrapperStyle={{ gap: 8, marginBottom: 8 }}
-                            renderItem={() => (
-                                <View className="flex-1 bg-gray-100 rounded-2xl p-3 animate-pulse">
-                                    <View className="w-full aspect-square rounded-2xl bg-gray-200 mb-3" />
-                                    <View className="h-3 w-3/4 rounded-full bg-gray-200 mb-2" />
-                                    <View className="h-3 w-1/2 rounded-full bg-gray-200" />
-                                </View>
-                            )}
-                        />
-                    )}
-
-                    {productsError && !isProductsLoading && (
-                        <Text className="text-red-500 text-sm">
-                            {productsError instanceof Error
-                                ? productsError.message
-                                : 'Gagal memuat produk.'}
-                        </Text>
-                    )}
-
-                    {!isProductsLoading && !productsError && products.length === 0 && (
-                        <Text className="text-gray-500 text-sm">Belum ada produk.</Text>
-                    )}
-
-                    {!isProductsLoading && !productsError && products.length > 0 && filteredProducts.length === 0 && (
-                        <Text className="text-gray-500 text-sm">Produk tidak ditemukan.</Text>
-                    )}
-
-                    {!isProductsLoading && !productsError && filteredProducts.length > 0 && (
-                        <FlatList
-                            data={filteredProducts}
-                            keyExtractor={(item) => item.id}
-                            showsVerticalScrollIndicator={false}
-                            numColumns={2}
-                            columnWrapperStyle={{ gap: 8 }}
-                            renderItem={({ item }) => (
-                                <View className="flex-1">
-                                    <ProductCard product={item} />
-                                </View>
-                            )}
-                        />
-                    )}
-                </View>
-            </BottomSheets>
-
-            <BottomSheets
+            {/* Bottomsheets For Payment */}
+            <Payment
                 visible={isPaymentSheetVisible}
                 onClose={() => setPaymentSheetVisible(false)}
-                title="Pembayaran"
-            >
-                <View className="mt-1">
-                    <Text className="text-gray-900 text-sm mb-1">Nama pelanggan</Text>
-                    <TextInput
-                        className="w-full rounded-2xl bg-gray-100 px-3 py-2 text-gray-900"
-                        placeholder="Masukkan nama pelanggan"
-                        placeholderTextColor="#9CA3AF"
-                        value={customerName}
-                        onChangeText={setCustomerName}
-                    />
-
-                    <Text className="text-gray-900 text-sm mt-4 mb-1">Metode pembayaran</Text>
-                    <View className="flex-row gap-3">
-                        <TouchableOpacity
-                            className={`flex-1 py-2 rounded-2xl border items-center ${paymentMethod === 'cash'
-                                ? 'bg-emerald-500 border-emerald-500'
-                                : 'bg-white border-gray-200'
-                                }`}
-                            activeOpacity={0.85}
-                            onPress={() => setPaymentMethod('cash')}
-                        >
-                            <Text
-                                className={`font-semibold ${paymentMethod === 'cash' ? 'text-white' : 'text-gray-900'
-                                    }`}
-                            >
-                                Cash
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            className={`flex-1 py-2 rounded-2xl border items-center ${paymentMethod === 'kasbon'
-                                ? 'bg-emerald-500 border-emerald-500'
-                                : 'bg-white border-gray-200'
-                                }`}
-                            activeOpacity={0.85}
-                            onPress={() => setPaymentMethod('kasbon')}
-                        >
-                            <Text
-                                className={`font-semibold ${paymentMethod === 'kasbon' ? 'text-white' : 'text-gray-900'
-                                    }`}
-                            >
-                                Kasbon
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    <Text className="text-gray-900 text-sm mt-4 mb-1">Diskon (Rp)</Text>
-                    <TextInput
-                        className="w-full rounded-2xl bg-gray-100 px-3 py-2 text-gray-900"
-                        placeholder="0"
-                        placeholderTextColor="#9CA3AF"
-                        keyboardType="numeric"
-                        value={discountInput}
-                        onChangeText={setDiscountInput}
-                    />
-
-                    <Text className="text-gray-900 text-sm mt-4 mb-1">Uang diterima</Text>
-                    <TextInput
-                        className="w-full rounded-2xl bg-gray-100 px-3 py-2 text-gray-900"
-                        placeholder="0"
-                        placeholderTextColor="#9CA3AF"
-                        keyboardType="numeric"
-                        value={receivedInput}
-                        onChangeText={setReceivedInput}
-                    />
-                    {quickAmounts.length > 0 && (
-                        <View className="mt-2 flex-row flex-wrap gap-2">
-                            {quickAmounts.map((amount) => (
-                                <TouchableOpacity
-                                    key={amount}
-                                    className="px-3 py-2 rounded-2xl bg-white border border-gray-200"
-                                    activeOpacity={0.85}
-                                    onPress={() => setReceivedInput(String(amount))}
-                                >
-                                    <Text className="text-gray-900 text-xs font-semibold">
-                                        {formatRupiah(amount)}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                    )}
-
-                    {/* Summary pembayaran */}
-                    <View className="mt-5 rounded-2xl bg-gray-50 p-4">
-                        <View className="flex-row items-center justify-between mb-2">
-                            <Text className="text-gray-500 text-xs">Sub total</Text>
-                            <Text className="text-gray-900 font-semibold text-xs">
-                                {formatRupiah(subtotal)}
-                            </Text>
-                        </View>
-                        <View className="flex-row items-center justify-between mb-2">
-                            <Text className="text-gray-500 text-xs">Diskon</Text>
-                            <Text className="text-gray-900 font-semibold text-xs">
-                                {formatRupiah(discount)}
-                            </Text>
-                        </View>
-                        <View className="h-px bg-gray-200 my-1" />
-                        <View className="flex-row items-center justify-between mb-1">
-                            <Text className="text-gray-900 font-semibold text-sm">Total bayar</Text>
-                            <Text className="text-emerald-600 font-semibold text-sm">
-                                {formatRupiah(total)}
-                            </Text>
-                        </View>
-                        <View className="flex-row items-center justify-between mt-1">
-                            <Text className="text-gray-500 text-xs">Uang diterima</Text>
-                            <Text className="text-gray-900 font-semibold text-xs">
-                                {formatRupiah(receivedAmount)}
-                            </Text>
-                        </View>
-                        {paymentMethod === 'kasbon' ? (
-                            <View className="flex-row items-center justify-between mt-1">
-                                <Text className="text-gray-500 text-xs">Jumlah yang harus dibayar</Text>
-                                <Text className="text-gray-900 font-semibold text-xs">
-                                    {formatRupiah(amountDue)}
-                                </Text>
-                            </View>
-                        ) : (
-                            <View className="flex-row items-center justify-between mt-1">
-                                <Text className="text-gray-500 text-xs">Kembalian</Text>
-                                <Text className="text-gray-900 font-semibold text-xs">
-                                    {formatRupiah(change)}
-                                </Text>
-                            </View>
-                        )}
-                    </View>
-
-                    <View className="mt-5 flex-row gap-3 pb-4">
-                        <TouchableOpacity
-                            className="flex-1 py-3 rounded-2xl border border-gray-200 bg-white items-center"
-                            activeOpacity={0.85}
-                            onPress={() => setPaymentSheetVisible(false)}
-                        >
-                            <Text className="text-gray-900 font-semibold">Batal</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            className={`flex-1 py-3 rounded-2xl items-center ${isSubmitting ? 'bg-emerald-300' : 'bg-emerald-500'
-                                }`}
-                            activeOpacity={0.85}
-                            disabled={isSubmitting}
-                            onPress={handleSubmitTransaction}
-                        >
-                            <Text className="text-white font-semibold">
-                                {isSubmitting ? 'Menyimpan...' : 'Simpan'}
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </BottomSheets>
+                customerName={customerName}
+                onChangeCustomerName={setCustomerName}
+                paymentMethod={paymentMethod}
+                onChangePaymentMethod={setPaymentMethod}
+                discountInput={discountInput}
+                onChangeDiscountInput={setDiscountInput}
+                receivedInput={receivedInput}
+                onChangeReceivedInput={setReceivedInput}
+                quickAmounts={quickAmounts}
+                subtotal={subtotal}
+                discount={discount}
+                total={total}
+                receivedAmount={receivedAmount}
+                change={change}
+                amountDue={amountDue}
+                isSubmitting={isSubmitting}
+                onSubmit={handleSubmitTransaction}
+            />
 
             {ScannerComponent && (
-                <Modal
+                <Scanner
                     visible={isScannerVisible}
-                    animationType="slide"
-                    onRequestClose={() => setScannerVisible(false)}
-                >
-                    <View className="flex-1 bg-black">
-                        <ScannerComponent
-                            style={{ flex: 1 }}
-                            // Dukungan untuk API lama (Camera.onBarCodeScanned) dan baru (CameraView.onBarcodeScanned)
-                            onBarCodeScanned={handleBarCodeScanned}
-                            onBarcodeScanned={handleBarCodeScanned}
-                            barcodeScannerSettings={{
-                                // tipe-tipe barcode umum, bisa disesuaikan kebutuhan
-                                barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'qr'],
-                            }}
-                        />
-                        <View className="absolute top-12 left-0 right-0 items-center">
-                            <Text className="text-white text-lg font-semibold">Arahkan ke barcode produk</Text>
-                        </View>
-                        <View className="absolute bottom-10 left-0 right-0 items-center">
-                            <TouchableOpacity
-                                className="px-5 py-3 rounded-2xl bg-white/80"
-                                activeOpacity={0.85}
-                                onPress={() => setScannerVisible(false)}
-                            >
-                                <Text className="text-gray-900 font-semibold">Tutup</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </Modal>
+                    onClose={() => setScannerVisible(false)}
+                    ScannerComponent={ScannerComponent}
+                    onBarCodeScanned={handleBarCodeScanned}
+                />
             )}
         </View>
     );

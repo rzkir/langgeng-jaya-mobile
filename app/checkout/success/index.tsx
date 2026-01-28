@@ -1,95 +1,32 @@
-import { buildStrukMessage } from '@/lib/TemplateStruk';
-
 import { Ionicons } from '@expo/vector-icons';
 
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 
 import LottieView from 'lottie-react-native';
 
-import React, { useCallback, useMemo } from 'react';
+import React from 'react';
 
-import { Alert, Share, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
-import { formatRupiah } from "@/lib/FormatPrice";
+import { formatRupiah } from '@/lib/FormatPrice';
+
+import Badge from '@/components/Badge';
+
+import { useStateSuccess } from '@/services/useStateSuccess';
 
 export default function CheckoutSuccess() {
-    const params = useLocalSearchParams<{
-        total?: string;
-        transactionNumber?: string;
-        paymentMethod?: string;
-        receivedAmount?: string;
-        change?: string;
-        customerName?: string;
-        cashierName?: string;
-        branchName?: string;
-        transactionItems?: string;
-    }>();
-
-    const total = Number(params.total || 0);
-    const receivedAmount = Number(params.receivedAmount || 0);
-    const change = Number(params.change || 0);
-    const transactionNumber = params.transactionNumber || '-';
-    const customerName = params.customerName || '-';
-    const cashierName = params.cashierName || '-';
-    const branchName = params.branchName || '';
-    const formattedTotal = formatRupiah(Number.isFinite(total) ? total : 0);
-    const formattedReceivedAmount = formatRupiah(Number.isFinite(receivedAmount) ? receivedAmount : 0);
-    const formattedChange = formatRupiah(Number.isFinite(change) ? change : 0);
-    // Halaman ini khusus untuk transaksi yang sudah paid (cash)
-    const paymentMethodText = 'Cash';
-
-    const transactionItems: TransactionItemPayload[] = useMemo(() => {
-        if (params.transactionItems && typeof params.transactionItems === 'string') {
-            try {
-                const parsed = JSON.parse(params.transactionItems) as TransactionItemPayload[];
-                if (Array.isArray(parsed)) {
-                    return parsed;
-                }
-            } catch (error) {
-                console.error('Failed to parse transactionItems params:', error);
-            }
-        }
-        return [];
-    }, [params.transactionItems]);
-
-    const handleShare = useCallback(async () => {
-        try {
-            const message = buildStrukMessage({
-                transactionNumber,
-                branchName,
-                customerName,
-                cashierName,
-                paymentMethodText,
-                formattedTotal,
-                formattedReceivedAmount,
-                formattedChange,
-                items: transactionItems,
-                formatRupiah,
-            });
-
-            await Share.share({ message });
-        } catch (error) {
-            console.error('Share error:', error);
-            Alert.alert('Gagal membagikan', 'Terjadi kesalahan saat membagikan struk.');
-        }
-    }, [
-        transactionItems,
-        transactionNumber,
-        branchName,
-        customerName,
-        cashierName,
-        paymentMethodText,
+    const {
         formattedTotal,
         formattedReceivedAmount,
         formattedChange,
-    ]);
-
-    const handlePrint = useCallback(() => {
-        Alert.alert(
-            'Cetak struk',
-            'Fitur cetak terhubung ke printer akan ditambahkan sesuai perangkat / printer yang digunakan.',
-        );
-    }, []);
+        paymentMethodText,
+        transactionNumber,
+        customerName,
+        cashierName,
+        transactionItems,
+        handlePrint,
+        handleShare,
+    } = useStateSuccess();
 
     return (
         <View className="flex-1 bg-white">
@@ -117,9 +54,7 @@ export default function CheckoutSuccess() {
                             </Text>
                             <Text className="text-gray-900 font-semibold mt-1">Details</Text>
                         </View>
-                        <View className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100">
-                            <Text className="text-emerald-600 text-xs font-semibold">Paid</Text>
-                        </View>
+                        <Badge status="success" label="Paid" />
                     </View>
 
                     <View className="h-px bg-gray-200 mb-3" />

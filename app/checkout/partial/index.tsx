@@ -10,6 +10,8 @@ import React, { useCallback, useMemo } from 'react';
 
 import { Alert, Share, Text, TouchableOpacity, View } from 'react-native';
 
+import Badge from '@/components/Badge';
+
 import { formatRupiah } from "@/lib/FormatPrice";
 
 export default function CheckoutSuccess() {
@@ -124,9 +126,7 @@ export default function CheckoutSuccess() {
                             </Text>
                             <Text className="text-gray-900 font-semibold mt-1">Details</Text>
                         </View>
-                        <View className="px-3 py-1 rounded-full border bg-amber-50 border-amber-100">
-                            <Text className="text-xs font-semibold text-amber-700">{paymentStatusText}</Text>
-                        </View>
+                        <Badge status="pending" label={paymentStatusText} />
                     </View>
 
                     <View className="h-px bg-gray-200 mb-3" />

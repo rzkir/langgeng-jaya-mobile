@@ -142,3 +142,54 @@ type UseStateCheckoutResult = {
     handleOpenScanner: () => Promise<void>;
     handleBarCodeScanned: ({ data }: { data: string }) => void;
 };
+
+type AddProductsProps = {
+    visible: boolean;
+    onClose: () => void;
+
+    searchQuery: string;
+    onChangeSearchQuery: (value: string) => void;
+
+    isProductsLoading: boolean;
+    productsError: unknown;
+    products: any[];
+    filteredProducts: any[];
+
+    onPressScan: () => void;
+};
+
+type PaymentProps = {
+    visible: boolean;
+    onClose: () => void;
+
+    customerName: string;
+    onChangeCustomerName: (value: string) => void;
+
+    paymentMethod: PaymentMethod;
+    onChangePaymentMethod: (value: PaymentMethod) => void;
+
+    discountInput: string;
+    onChangeDiscountInput: (value: string) => void;
+
+    receivedInput: string;
+    onChangeReceivedInput: (value: string) => void;
+
+    quickAmounts: number[];
+
+    subtotal: number;
+    discount: number;
+    total: number;
+    receivedAmount: number;
+    change: number;
+    amountDue: number;
+
+    isSubmitting: boolean;
+    onSubmit: () => void;
+};
+
+type ScannerProps = {
+    visible: boolean;
+    onClose: () => void;
+    ScannerComponent: React.ComponentType<any>;
+    onBarCodeScanned: (data: any) => void;
+};
