@@ -28,24 +28,22 @@ export const API_CONFIG = {
                     return `${API_BASE_URL}/karyawan/products/popular?${params.toString()}`;
                 },
             },
-        },
-        categories: {
-            list: `${API_BASE_URL}/categories`,
-            byId: (id: string | number) => `${API_BASE_URL}/categories/${encodeURIComponent(String(id))}`,
-        },
-        customers: {
-            base: `${API_BASE_URL}/customers`,
-            byId: (id: string | number) => `${API_BASE_URL}/customers/${encodeURIComponent(String(id))}`,
-        },
-        transactions: {
-            base: `${API_BASE_URL}/transactions`,
-            byId: (id: string | number) => `${API_BASE_URL}/transactions/${encodeURIComponent(String(id))}`,
-            list: (page: number = 1, limit: number = 10) => {
-                const params = new URLSearchParams({
-                    page: String(page),
-                    limit: String(limit),
-                });
-                return `${API_BASE_URL}/transactions?${params.toString()}`;
+            categories: {
+                list: `${API_BASE_URL}/categories`,
+                byId: (id: string | number) => `${API_BASE_URL}/categories/${encodeURIComponent(String(id))}`,
+            },
+            transactions: {
+                base: `${API_BASE_URL}/transactions`,
+                list: (branchName: string, page: number = 1, limit: number = 10) => {
+                    const params = new URLSearchParams({
+                        branch_name: branchName.trim(),
+                        page: String(page),
+                        limit: String(limit),
+                    });
+                    return `${API_BASE_URL}/karyawan/transaction?${params.toString()}`;
+                },
+                byId: (id: string | number) =>
+                    `${API_BASE_URL}/karyawan/transaction/${encodeURIComponent(String(id))}`,
             },
         },
     },

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Text, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import { STATUS_STYLES } from "@/assets/data/Data";
 
@@ -29,3 +29,49 @@ export default function Badge({ status, label, className }: BadgeProps) {
     );
 }
 
+export function StatusPill({ status }: { status: TxStatus }) {
+    const badgeStatus: BadgeStatus =
+        status === 'completed'
+            ? 'success'
+            : status === 'pending'
+                ? 'pending'
+                : status === 'cancelled'
+                    ? 'canceled'
+                    : 'failed';
+
+    const label =
+        status === 'completed'
+            ? 'Completed'
+            : status === 'pending'
+                ? 'Pending'
+                : status === 'cancelled'
+                    ? 'Cancelled'
+                    : 'Return';
+
+    return <Badge status={badgeStatus} label={label} />;
+}
+
+export function FilterPill({
+    label,
+    active,
+    onPress,
+}: {
+    label: string;
+    active: boolean;
+    onPress: () => void;
+}) {
+    return (
+        <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={onPress}
+            className={[
+                'px-5 py-3 rounded-2xl border',
+                active ? 'bg-gray-900 border-gray-900' : 'bg-white border-gray-200',
+            ].join(' ')}
+        >
+            <Text className={active ? 'text-white font-semibold' : 'text-gray-700 font-semibold'}>
+                {label}
+            </Text>
+        </TouchableOpacity>
+    );
+}

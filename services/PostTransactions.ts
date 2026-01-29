@@ -3,7 +3,7 @@ import { API_CONFIG } from '@/lib/config';
 export async function postTransaction<TData = any>(
     payload: CreateTransactionPayload,
 ): Promise<TransactionResponse<TData>> {
-    const response = await fetch(API_CONFIG.ENDPOINTS.transactions.base, {
+    const response = await fetch(API_CONFIG.ENDPOINTS.karyawan.transactions.base, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

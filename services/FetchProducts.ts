@@ -41,7 +41,7 @@ export async function fetchKaryawanProducts(
 
 export async function fetchCategories(): Promise<CategoriesResponse> {
     try {
-        const data = await apiFetch<CategoriesResponse>(API_CONFIG.ENDPOINTS.categories.list)
+        const data = await apiFetch<CategoriesResponse>(API_CONFIG.ENDPOINTS.karyawan.categories.list)
         if (!data.success) {
             throw new Error(data.message || "Failed to fetch categories")
         }

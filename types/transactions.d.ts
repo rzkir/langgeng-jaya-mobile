@@ -1,9 +1,9 @@
 interface Transaction {
-    id: number;
+    id: string;
     transaction_number: string;
 
     // Customer (wajib jika kasbon)
-    customer_name?: string;
+    customer_name: string;
 
     // Financial
     subtotal: number;
@@ -17,22 +17,19 @@ interface Transaction {
     // Payment
     payment_method: "cash" | "kasbon";
     payment_status: "paid" | "unpaid" | "partial";
-    items?: string | {
-        product_id?: string | number;
-        product_name: string;
-        image_url?: string;
-        quantity: number;
-        price: number;
-        subtotal?: number;
-        unit?: string;
-    }[]; // JSON string or array from API
+
+    /**
+     * Raw `items` dari API berupa JSON string.
+     * Contoh: "[{\"product_id\":\"...\",\"product_name\":\"...\",...}]"
+     */
+    items: string;
 
     // Transaction lifecycle
     status: "pending" | "completed" | "cancelled" | "return";
 
     // Branch & audit
     branch_name: string;
-    created_by?: string;
+    created_by: string;
     created_at: string;
     updated_at: string;
 }
@@ -46,6 +43,21 @@ type TransactionItemPayload = {
     subtotal: number;
     unit?: string | null;
 };
+
+interface TransactionsPagination {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+}
+
+interface GetTransactionsResponse {
+    success: boolean;
+    data: Transaction[];
+    pagination: TransactionsPagination;
+}
 
 type CreateTransactionPayload = {
     customer_name: string;
@@ -192,4 +204,17 @@ type ScannerProps = {
     onClose: () => void;
     ScannerComponent: React.ComponentType<any>;
     onBarCodeScanned: (data: any) => void;
+};
+
+type TxStatus = 'pending' | 'completed' | 'cancelled' | 'return';
+
+type TxRecord = {
+    id: string;
+    customerName: string;
+    orderCode: string;
+    time: string;
+    amount: number;
+    status: TxStatus;
+    paymentMethodLabel: string;
+    itemsCount: number;
 };
