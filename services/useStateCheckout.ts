@@ -168,8 +168,8 @@ export function useStateCheckout(): UseStateCheckoutResult {
             }));
 
             const response = await postTransaction({
-                customer_name: customerName || '',
-                created_by: userName || '',
+                customer_name: customerName?.trim() ? customerName.trim() : 'Transaksi Tamu',
+                created_by: userName?.trim() ? userName.trim() : '',
                 subtotal: subtotalAfterDiscount,
                 tax: 0,
                 total,

@@ -57,6 +57,7 @@ export default function TabsLayout() {
                 name="profile/index"
                 options={{
                     title: 'Profile',
+                    headerShown: false,
                     tabBarIcon: ({ color, size }) => (
                         <MaterialIcons name="person" size={size} color={color} />
                     ),

@@ -1,115 +1,34 @@
-import React, { useMemo, useState } from 'react';
-
-import { useQuery } from '@tanstack/react-query';
+import React from 'react';
 
 import { Ionicons } from '@expo/vector-icons';
 
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { Skeleton, SkeletonCircle, SkeletonText } from '@/components/Skelaton';
 
-import { fetchTransactions } from '@/services/FetchTransactions';
+import { useStateTransactios } from '@/services/useStateTransactios';
 
-import { useAuth } from '@/context/AuthContext';
-
-import { FilterPill, StatusPill } from "@/components/Badge";
+import { StatusPill } from "@/components/Badge";
 
 import { RefreshControl } from 'react-native-gesture-handler';
 
+import BottomSheets from '@/components/BottomSheets';
+
 export default function Transaction() {
-    const [filter, setFilter] = useState<'all' | TxStatus>('all');
-
-    const page = 1;
-    const limit = 10;
-
-    const { user } = useAuth();
-    const branchName = user?.branchName || '';
-    const { data, isLoading, error, refetch, isRefetching } = useQuery({
-        queryKey: ['transactions', branchName, page, limit],
-        queryFn: () => fetchTransactions(branchName, page, limit),
-        enabled: !!branchName,
-    });
-
-    const records: TxRecord[] = useMemo(() => {
-        const txs = data?.data ?? [];
-
-        return txs.map((tx) => {
-            let itemsCount = 0;
-            try {
-                const parsed = JSON.parse(tx.items ?? '[]');
-                if (Array.isArray(parsed)) itemsCount = parsed.length;
-            } catch {
-                itemsCount = 0;
-            }
-
-            const created = tx.created_at ? new Date(tx.created_at) : null;
-            const time = created
-                ? created.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-                : '';
-
-            const customerName = tx.customer_name?.trim() ? tx.customer_name : 'Transaksi Tamu';
-            const paymentMethodLabel =
-                tx.payment_method === 'cash' ? 'Cash' : tx.payment_method === 'kasbon' ? 'Kasbon' : tx.payment_method;
-
-            return {
-                id: tx.id,
-                customerName,
-                orderCode: tx.transaction_number,
-                time,
-                amount: tx.total,
-                status: tx.status as TxStatus,
-                paymentMethodLabel,
-                itemsCount,
-            };
-        });
-    }, [data?.data]);
-
-    const stats = useMemo(() => {
-        const today = new Date();
-        const isSameDay = (a: Date, b: Date) =>
-            a.getFullYear() === b.getFullYear() &&
-            a.getMonth() === b.getMonth() &&
-            a.getDate() === b.getDate();
-
-        const allTx = data?.data ?? [];
-
-        // Transaksi hari ini
-        const todayTx = allTx.filter((tx) => {
-            if (!tx.created_at) return false;
-            const d = new Date(tx.created_at);
-            return isSameDay(d, today);
-        });
-
-        const completedToday = todayTx.filter((tx) => tx.status === 'completed');
-        const totalSalesToday = completedToday.reduce((sum, tx) => sum + (tx.total ?? 0), 0);
-        const ordersToday = completedToday.length;
-        const avg = ordersToday > 0 ? totalSalesToday / ordersToday : 0;
-
-        // Bandingkan dengan total sales kemarin untuk persentase naik/turun
-        const yesterday = new Date(today);
-        yesterday.setDate(today.getDate() - 1);
-
-        const yesterdayTx = allTx.filter((tx) => {
-            if (!tx.created_at) return false;
-            const d = new Date(tx.created_at);
-            return isSameDay(d, yesterday);
-        });
-
-        const completedYesterday = yesterdayTx.filter((tx) => tx.status === 'completed');
-        const totalSalesYesterday = completedYesterday.reduce((sum, tx) => sum + (tx.total ?? 0), 0);
-
-        const trendPercent =
-            totalSalesYesterday > 0
-                ? ((totalSalesToday - totalSalesYesterday) / totalSalesYesterday) * 100
-                : null;
-
-        return { totalSalesToday, ordersToday, avg, trendPercent };
-    }, [data?.data]);
-
-    const filtered = useMemo(() => {
-        if (filter === 'all') return records;
-        return records.filter((r) => r.status === filter);
-    }, [filter, records]);
+    const {
+        filter,
+        setFilter,
+        isFilterSheetOpen,
+        setIsFilterSheetOpen,
+        searchQuery,
+        setSearchQuery,
+        isLoading,
+        error,
+        refetch,
+        isRefetching,
+        stats,
+        filtered,
+    } = useStateTransactios();
 
     return (
         <View className="flex-1 bg-white">
@@ -206,34 +125,46 @@ export default function Transaction() {
                         </View>
                     </View>
 
-                    <View className="mt-5 flex-row gap-3">
-                        <FilterPill label="All" active={filter === 'all'} onPress={() => setFilter('all')} />
-                        <FilterPill
-                            label="Completed"
-                            active={filter === 'completed'}
-                            onPress={() => setFilter('completed')}
-                        />
-                        <FilterPill
-                            label="Pending"
-                            active={filter === 'pending'}
-                            onPress={() => setFilter('pending')}
-                        />
+                    <View className="mt-5 gap-3 flex-row">
+                        <View className="relative flex-1">
+                            <View className="absolute left-4 top-0 bottom-0 justify-center z-10">
+                                <Ionicons name="search-outline" size={20} color="#9CA3AF" />
+                            </View>
+                            <TextInput
+                                value={searchQuery}
+                                onChangeText={setSearchQuery}
+                                placeholder="Cari berdasarkan nama atau ID transaksi..."
+                                placeholderTextColor="#9CA3AF"
+                                className="pl-12 pr-4 py-3 rounded-2xl border border-gray-200 bg-white text-gray-900"
+                                style={{ fontSize: 14 }}
+                            />
+                            {searchQuery.length > 0 && (
+                                <TouchableOpacity
+                                    activeOpacity={0.7}
+                                    onPress={() => setSearchQuery('')}
+                                    className="absolute right-4 top-0 bottom-0 justify-center"
+                                >
+                                    <Ionicons name="close-circle" size={20} color="#9CA3AF" />
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                        <TouchableOpacity
+                            activeOpacity={0.85}
+                            onPress={() => setIsFilterSheetOpen(true)}
+                            className="px-5 py-3 rounded-2xl border border-gray-200 bg-white flex-row items-center justify-between"
+                        >
+                            <Text className="text-gray-700 font-semibold">
+                                {filter === 'all' ? 'All' : filter === 'completed' ? 'Completed' : 'Pending'}
+                            </Text>
+                            <Ionicons name="chevron-down" size={18} color="#6B7280" />
+                        </TouchableOpacity>
                     </View>
                 </View>
 
                 <View className="px-6 mt-2">
-                    <View className="flex-row items-center justify-between">
-                        <Text className="text-xs tracking-widest text-gray-400 font-bold">CATATAN TERBARU</Text>
-                        <TouchableOpacity
-                            activeOpacity={0.85}
-                            onPress={() => refetch()}
-                            className="w-10 h-10 rounded-2xl bg-gray-50 border border-gray-100 items-center justify-center"
-                        >
-                            <Ionicons name="refresh-outline" size={18} color="#6B7280" />
-                        </TouchableOpacity>
-                    </View>
+                    <Text className="text-base tracking-widest text-gray-400 font-bold mt-4 pl-2 border-l-2 border-gray-600">CATATAN TERBARU</Text>
 
-                    <View className="mt-4 gap-4">
+                    <View className="mt-6 gap-4">
                         {isLoading && (
                             <View className="gap-4">
                                 {[1, 2, 3].map((i) => (
@@ -292,7 +223,11 @@ export default function Transaction() {
 
                         {!isLoading && !error && filtered.length === 0 && (
                             <View className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
-                                <Text className="text-gray-500">Belum ada transaksi.</Text>
+                                <Text className="text-gray-500">
+                                    {searchQuery.trim() || filter !== 'all'
+                                        ? 'Tidak ada transaksi yang sesuai dengan filter.'
+                                        : 'Belum ada transaksi.'}
+                                </Text>
                             </View>
                         )}
 
@@ -334,13 +269,15 @@ export default function Transaction() {
                                     <View className="flex-row items-center justify-between mt-4">
                                         <View className="flex-row items-center">
                                             <View className="w-12 h-12 rounded-2xl bg-gray-50 border border-gray-100 items-center justify-center">
-                                                <Text className="text-lg font-extrabold text-[#1F2937]">
-                                                    {r.paymentMethodLabel.toUpperCase() === 'CASH'
-                                                        ? 'CASH'
-                                                        : r.paymentMethodLabel.toUpperCase() === 'KASBON'
-                                                            ? 'KSB'
-                                                            : r.paymentMethodLabel.toUpperCase().slice(0, 3)}
-                                                </Text>
+                                                {r.paymentMethodLabel.toUpperCase() === 'CASH' ? (
+                                                    <Ionicons name="cash-outline" size={24} color="#1F2937" />
+                                                ) : r.paymentMethodLabel.toUpperCase() === 'KASBON' ? (
+                                                    <Ionicons name="receipt-outline" size={24} color="#1F2937" />
+                                                ) : (
+                                                    <Text className="text-lg font-extrabold text-[#1F2937]">
+                                                        {r.paymentMethodLabel.toUpperCase().slice(0, 3)}
+                                                    </Text>
+                                                )}
                                             </View>
 
                                             <View className="ml-3">
@@ -366,6 +303,60 @@ export default function Transaction() {
                     </View>
                 </View>
             </ScrollView>
+
+            <BottomSheets
+                visible={isFilterSheetOpen}
+                onClose={() => setIsFilterSheetOpen(false)}
+                title="Filter Transaksi"
+            >
+                <View className="pb-6">
+                    <TouchableOpacity
+                        activeOpacity={0.8}
+                        className={`py-4 border-b border-gray-100 ${filter === 'all' ? 'bg-gray-50' : ''}`}
+                        onPress={() => {
+                            setFilter('all');
+                            setIsFilterSheetOpen(false);
+                        }}
+                    >
+                        <View className="flex-row items-center justify-between">
+                            <Text className={`font-medium ${filter === 'all' ? 'text-gray-900' : 'text-gray-600'}`}>
+                                All
+                            </Text>
+                            {filter === 'all' && <Ionicons name="checkmark" size={20} color="#7C3AED" />}
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        activeOpacity={0.8}
+                        className={`py-4 border-b border-gray-100 ${filter === 'completed' ? 'bg-gray-50' : ''}`}
+                        onPress={() => {
+                            setFilter('completed');
+                            setIsFilterSheetOpen(false);
+                        }}
+                    >
+                        <View className="flex-row items-center justify-between">
+                            <Text className={`font-medium ${filter === 'completed' ? 'text-gray-900' : 'text-gray-600'}`}>
+                                Completed
+                            </Text>
+                            {filter === 'completed' && <Ionicons name="checkmark" size={20} color="#7C3AED" />}
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        activeOpacity={0.8}
+                        className={`py-4 ${filter === 'pending' ? 'bg-gray-50' : ''}`}
+                        onPress={() => {
+                            setFilter('pending');
+                            setIsFilterSheetOpen(false);
+                        }}
+                    >
+                        <View className="flex-row items-center justify-between">
+                            <Text className={`font-medium ${filter === 'pending' ? 'text-gray-900' : 'text-gray-600'}`}>
+                                Pending
+                            </Text>
+                            {filter === 'pending' && <Ionicons name="checkmark" size={20} color="#7C3AED" />}
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            </BottomSheets>
         </View>
     );
 }
