@@ -77,25 +77,61 @@ export const getCategoryIcon = (categoryName: string): keyof typeof Ionicons.gly
     return 'cube-outline';
 };
 
-export const HeaderData = [
-    {
-        id: 1,
-        title: "Rekaputasi",
-        link: "/transaction",
-    },
-    {
-        id: 2,
-        title: "Laporan",
-        link: "/report",
-    },
-    {
-        id: 3,
-        title: "Hutang",
-        link: "/debt",
-    },
-    {
-        id: 4,
-        title: "Pembayaran",
-        link: "/payment",
-    }
+export const HeaderData: {
+    id: number;
+    title: string;
+    link: string;
+    icon: keyof typeof Ionicons.glyphMap;
+}[] = [
+        {
+            id: 1,
+            title: "Semua Transaksi",
+            link: "/transactions",
+            icon: "receipt-outline",
+        },
+        {
+            id: 2,
+            title: "Rekaputasi",
+            link: "/transactions/rekap",
+            icon: "stats-chart-outline",
+        },
+        {
+            id: 3,
+            title: "Partial",
+            link: "/transactions/partial",
+            icon: "pricetag-outline",
+        },
+        {
+            id: 4,
+            title: "Laporan",
+            link: "/transactions/laporan",
+            icon: "document-text-outline",
+        },
+        {
+            id: 5,
+            title: "Pembayaran",
+            link: "/transactions/pembayaran",
+            icon: "wallet-outline",
+        },
+    ]
+
+export const STATUS_OPTIONS: { value: FilterStatus; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+    { value: 'all', label: 'Semua Status', icon: 'list-outline' },
+    { value: 'pending', label: 'Pending', icon: 'time-outline' },
+    { value: 'completed', label: 'Completed', icon: 'checkmark-done-outline' },
+    { value: 'cancelled', label: 'Cancelled', icon: 'close-circle-outline' },
+    { value: 'return', label: 'Return', icon: 'return-down-back-outline' },
 ]
+
+export const PAYMENT_STATUS_OPTIONS: { value: FilterPaymentStatus; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+    { value: 'all', label: 'Semua Pembayaran', icon: 'wallet-outline' },
+    { value: 'paid', label: 'Lunas', icon: 'checkmark-circle-outline' },
+    { value: 'unpaid', label: 'Belum Bayar', icon: 'alert-circle-outline' },
+    { value: 'partial', label: 'Sebagian', icon: 'pricetag-outline' },
+]
+
+export function formatShortAmount(n: number): string {
+    if (n >= 1e6) return `${(n / 1e6).toFixed(1)} jt`
+    if (n >= 1e3) return `${Math.round(n / 1e3)} rb`
+    return Math.round(n).toString()
+}

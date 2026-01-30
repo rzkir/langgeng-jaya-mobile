@@ -37,3 +37,22 @@ export async function fetchTransactions(
     }
 }
 
+export async function fetchTransactionDetail(id: string): Promise<TransactionDetail> {
+    try {
+        const data = await apiFetch<ApiResponse<TransactionDetail>>(
+            API_CONFIG.ENDPOINTS.karyawan.transactions.byId(id),
+        );
+
+        if (!data.success) {
+            throw new Error(data.message || 'Failed to fetch transaction detail');
+        }
+
+        return data.data as TransactionDetail;
+    } catch (error) {
+        console.error('Fetch transaction detail error:', error);
+        if (error && typeof error === 'object' && 'status' in error && (error as any).status === 401) {
+            throw new Error('Unauthorized');
+        }
+        throw error instanceof Error ? error : new Error('Failed to fetch transaction detail');
+    }
+}

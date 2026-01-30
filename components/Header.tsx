@@ -104,7 +104,10 @@ export function Header({ onMenuPress }: HeaderProps) {
                                 router.push(item.link as any);
                             }}
                         >
-                            <Text className="text-gray-900 font-medium">{item.title}</Text>
+                            <View className="flex-row items-center gap-3">
+                                <Ionicons name={item.icon} size={22} color="#374151" />
+                                <Text className="text-gray-900 font-medium">{item.title}</Text>
+                            </View>
                         </TouchableOpacity>
                     ))}
                 </View>

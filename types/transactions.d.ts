@@ -218,3 +218,16 @@ type TxRecord = {
     paymentMethodLabel: string;
     itemsCount: number;
 };
+
+type FilterStatus = 'all' | TxStatus
+
+type FilterPaymentStatus = 'all' | 'paid' | 'unpaid' | 'partial'
+
+//============= Transaction Details =============//
+
+type TransactionDetail = Transaction;
+
+interface GetTransactionDetailResponse {
+    success: boolean;
+    data: TransactionDetail;
+}

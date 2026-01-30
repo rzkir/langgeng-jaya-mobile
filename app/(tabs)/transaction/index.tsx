@@ -14,6 +14,8 @@ import { RefreshControl } from 'react-native-gesture-handler';
 
 import BottomSheets from '@/components/BottomSheets';
 
+import { router } from 'expo-router';
+
 export default function Transaction() {
     const {
         filter,
@@ -292,7 +294,7 @@ export default function Transaction() {
                                             </View>
                                         </View>
 
-                                        <TouchableOpacity activeOpacity={0.85} className="flex-row items-center">
+                                        <TouchableOpacity activeOpacity={0.85} className="flex-row items-center" onPress={() => router.push(`/transactions/${r.id}`)}>
                                             <Text className="text-sm font-semibold text-gray-500 mr-1">Details</Text>
                                             <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
                                         </TouchableOpacity>
