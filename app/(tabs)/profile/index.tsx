@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 
 import {
     ActivityIndicator,
     Alert,
     RefreshControl,
     ScrollView,
-    Switch,
     Text,
     TouchableOpacity,
     View,
@@ -13,18 +12,15 @@ import {
 
 import { Ionicons } from '@expo/vector-icons';
 
-import appJson from '@/app.json';
-import { useAuth } from '@/context/AuthContext';
-import { formatRupiah } from '@/lib/FormatPrice';
-import { fetchTransactions } from '@/services/FetchTransactions';
+import { router } from 'expo-router';
 
-function isSameDay(a: Date, b: Date) {
-    return (
-        a.getFullYear() === b.getFullYear() &&
-        a.getMonth() === b.getMonth() &&
-        a.getDate() === b.getDate()
-    );
-}
+import appJson from '@/app.json';
+
+import { useAuth } from '@/context/AuthContext';
+
+import { formatRupiah } from '@/lib/FormatPrice';
+
+import { useProfileStats } from '@/services/useProfileStats';
 
 function getInitials(name?: string) {
     const cleaned = (name || '').trim();
@@ -165,76 +161,14 @@ function Row({
 }
 
 export default function Profile() {
-    const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const { user, isLoading, logout } = useAuth();
-    const [transactionsLoading, setTransactionsLoading] = useState(false);
-    const [salesManaged, setSalesManaged] = useState(0);
-    const [clientsServed, setClientsServed] = useState(0);
-    const [refreshing, setRefreshing] = useState(false);
-
-    const loadTransactionStats = useCallback(async () => {
-        if (!user?.branchName || !user?.name) return;
-
-        setTransactionsLoading(true);
-        try {
-            let allTransactions: {
-                id: string;
-                created_by: string;
-                customer_name: string;
-                branch_name: string;
-                total: number;
-                status: string;
-                created_at: string;
-            }[] = [];
-            let page = 1;
-            let hasMore = true;
-
-            while (hasMore) {
-                const response = await fetchTransactions(user.branchName!, page, 100);
-                if (response.success && response.data) {
-                    allTransactions = [...allTransactions, ...response.data];
-                    hasMore = response.pagination?.hasNext || false;
-                    page++;
-                } else {
-                    hasMore = false;
-                }
-            }
-
-            const userTransactions = allTransactions.filter(
-                (tx) => tx.created_by === user.name && tx.branch_name === user.branchName
-            );
-
-            const today = new Date();
-            const todayCompletedTransactions = userTransactions.filter((tx) => {
-                if (!tx.created_at || tx.status !== 'completed') return false;
-                const txDate = new Date(tx.created_at);
-                return isSameDay(txDate, today);
-            });
-
-            const totalSales = todayCompletedTransactions.reduce(
-                (sum, tx) => sum + (tx.total || 0),
-                0
-            );
-            setSalesManaged(totalSales);
-
-            const uniqueCustomers = new Set(
-                todayCompletedTransactions.map((tx) =>
-                    tx.customer_name?.trim()
-                        ? tx.customer_name.trim()
-                        : 'Transaksi Tamu'
-                )
-            );
-            setClientsServed(uniqueCustomers.size);
-        } catch (error) {
-            console.error('Error loading transaction stats:', error);
-        } finally {
-            setTransactionsLoading(false);
-        }
-    }, [user?.branchName, user?.name]);
-
-    useEffect(() => {
-        loadTransactionStats();
-    }, [loadTransactionStats]);
+    const {
+        salesManaged,
+        clientsServed,
+        isLoading: transactionsLoading,
+        isRefetching: refreshing,
+        refetch,
+    } = useProfileStats();
 
     const handleLogout = () => {
         Alert.alert(
@@ -277,12 +211,6 @@ export default function Profile() {
         };
     }, [clientsServed, salesManaged, user?.email, user?.name, user?.roleType, user?.branchName]);
 
-    const onRefresh = useCallback(async () => {
-        setRefreshing(true);
-        await loadTransactionStats();
-        setRefreshing(false);
-    }, [loadTransactionStats]);
-
     if (isLoading) {
         return (
             <View className="flex-1 bg-slate-50 items-center justify-center">
@@ -293,14 +221,14 @@ export default function Profile() {
     }
 
     return (
-        <View className="flex-1 bg-slate-50">
+        <View className="flex-1 bg-white">
             <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 28, paddingTop: 18 }}
+                contentContainerStyle={{ paddingBottom: 20, paddingTop: 18 }}
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
-                        onRefresh={onRefresh}
+                        onRefresh={refetch}
                         tintColor="#7C3AED"
                     />
                 }
@@ -413,19 +341,6 @@ export default function Profile() {
                             onPress={() => Alert.alert('Email', userData.email)}
                         />
                         <View className="h-px bg-slate-100 mx-4" />
-                        <Row
-                            icon="call-outline"
-                            iconBgClassName="bg-slate-100"
-                            iconColor="#475569"
-                            title="Phone"
-                            subtitle={userData.phone}
-                            onPress={() =>
-                                Alert.alert(
-                                    'Phone',
-                                    'Phone number is not available yet.'
-                                )
-                            }
-                        />
                         <View className="h-px bg-slate-100 mx-4" />
                         <Row
                             icon="location-outline"
@@ -441,31 +356,14 @@ export default function Profile() {
                 <View className="px-4 mt-6">
                     <SectionHeader title="Preferences" />
                     <Card>
-                        <View className="flex-row items-center justify-between px-4 py-4">
-                            <View className="flex-row items-center flex-1 pr-3">
-                                <View className="w-10 h-10 rounded-2xl bg-purple-100 items-center justify-center">
-                                    <Ionicons
-                                        name="notifications-outline"
-                                        size={18}
-                                        color="#7C3AED"
-                                    />
-                                </View>
-                                <View className="ml-3 flex-1">
-                                    <Text className="text-sm font-semibold text-slate-900">
-                                        Notifications
-                                    </Text>
-                                    <Text className="text-xs text-slate-500 mt-0.5">
-                                        Receive transaction updates
-                                    </Text>
-                                </View>
-                            </View>
-                            <Switch
-                                value={notificationsEnabled}
-                                onValueChange={setNotificationsEnabled}
-                                trackColor={{ false: '#CBD5E1', true: '#7C3AED' }}
-                                thumbColor="#FFFFFF"
-                            />
-                        </View>
+                        <Row
+                            icon="notifications-outline"
+                            iconBgClassName="bg-purple-100"
+                            iconColor="#7C3AED"
+                            title="Notifications"
+                            subtitle="Receive transaction updates"
+                            onPress={() => router.push('/profile/notifications')}
+                        />
                         <View className="h-px bg-slate-100 mx-4" />
                         <Row
                             icon="color-palette-outline"
@@ -475,6 +373,17 @@ export default function Profile() {
                             subtitle={userData.appearance}
                             onPress={() =>
                                 Alert.alert('Appearance', 'Coming soon.')
+                            }
+                        />
+                        <View className="h-px bg-slate-100 mx-4" />
+                        <Row
+                            icon="print-outline"
+                            iconBgClassName="bg-slate-100"
+                            iconColor="#475569"
+                            title="Printer"
+                            subtitle="Receipt & thermal printer"
+                            onPress={() =>
+                                router.push('/profile/printer')
                             }
                         />
                     </Card>
@@ -490,9 +399,7 @@ export default function Profile() {
                             iconColor="#475569"
                             title="Help & Support"
                             subtitle="FAQ and contact"
-                            onPress={() =>
-                                Alert.alert('Help & Support', 'Coming soon.')
-                            }
+                            onPress={() => router.push('/profile/faqs')}
                         />
                         <View className="h-px bg-slate-100 mx-4" />
                         <Row

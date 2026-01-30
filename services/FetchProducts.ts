@@ -59,6 +59,26 @@ export async function fetchCategories(): Promise<CategoriesResponse> {
     }
 }
 
+export async function fetchProductsSearch(branchName: string, page: number = 1, limit: number = 10): Promise<ProductsSearchResponse> {
+    try {
+        if (!branchName || branchName.trim() === '') {
+            throw new Error('Branch name is required');
+        }
+        const data = await apiFetch<ProductsSearchResponse>(API_CONFIG.ENDPOINTS.karyawan.products.search(branchName, page, limit))
+        if (!data.success) {
+            throw new Error(data.message || "Failed to fetch products search")
+        }
+        return data
+    }
+    catch (error) {
+        console.error("Fetch products search error:", error)
+        if (error && typeof error === 'object' && 'status' in error && error.status === 401) {
+            throw new Error("Unauthorized")
+        }
+        throw error instanceof Error ? error : new Error("Failed to fetch products search")
+    }
+}
+
 export async function fetchProductsPopular(branchName: string, limit: number = 100): Promise<ProductsPopularResponse> {
     try {
         const data = await apiFetch<ProductsPopularResponse>(API_CONFIG.ENDPOINTS.karyawan.products.popular(branchName, limit))

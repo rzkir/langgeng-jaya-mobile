@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 
 import LottieView from 'lottie-react-native';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import { Text, TouchableOpacity, View } from 'react-native';
 
@@ -12,9 +12,11 @@ import Badge from '@/components/Badge';
 
 import { formatRupiah } from "@/lib/FormatPrice";
 
+import { usePushNotifications } from '@/lib/PushNotifications';
+
 import { useStatePartial } from '@/services/useStatePartial';
 
-export default function CheckoutSuccess() {
+export default function CheckoutPartial() {
     const {
         transactionNumber,
         customerName,
@@ -25,9 +27,48 @@ export default function CheckoutSuccess() {
         paymentMethodText,
         paymentStatusText,
         transactionItems,
+        total,
         handleShare,
         handlePrint,
     } = useStatePartial();
+
+    const {
+        sendTransactionNotification,
+        loading: notificationsLoading,
+        notificationPermission,
+        settings,
+    } = usePushNotifications();
+    const notifiedRef = useRef(false);
+
+    useEffect(() => {
+        if (
+            notifiedRef.current ||
+            !transactionNumber ||
+            transactionNumber === "-" ||
+            notificationsLoading ||
+            !notificationPermission ||
+            !settings.pushEnabled ||
+            settings.transactionNotifications !== true
+        ) {
+            return;
+        }
+        let cancelled = false;
+        (async () => {
+            const sent = await sendTransactionNotification(transactionNumber, total, true);
+            if (!cancelled && sent) notifiedRef.current = true;
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [
+        transactionNumber,
+        total,
+        sendTransactionNotification,
+        notificationsLoading,
+        notificationPermission,
+        settings.pushEnabled,
+        settings.transactionNotifications,
+    ]);
 
     return (
         <View className="flex-1 bg-white">

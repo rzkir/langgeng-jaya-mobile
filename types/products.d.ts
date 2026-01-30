@@ -1,5 +1,4 @@
 // Products
-
 interface Product {
     id: string;
     price: number;
@@ -51,7 +50,6 @@ interface ProductsPopularResponse extends ApiResponse<ProductPopular[]> {
     meta: ProductsPopularMeta;
 }
 
-
 // Products Details
 interface ProductDetails {
     id: string;
@@ -69,4 +67,9 @@ interface ProductDetails {
     branch_name: string;
     supplier_name: string;
     expiration_date: string;
+}
+
+// Products Search (list products with sold & stock)
+interface ProductsSearchResponse extends ApiResponse<ProductPopular[]> {
+    pagination: ApiPagination;
 }

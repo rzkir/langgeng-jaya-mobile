@@ -79,14 +79,19 @@ export default function Beranda() {
                 {/* Header ala lokasi & user */}
                 <View className="bg-white px-4 pt-4 pb-4 rounded-b-3xl shadow-sm">
                     <View className="flex-row items-center">
-                        <View className="flex-1 flex-row items-center bg-gray-100 rounded-2xl px-4 py-1 mr-3">
+                        <TouchableOpacity
+                            className="flex-1 flex-row items-center bg-gray-100 rounded-2xl px-4 py-1 mr-3"
+                            activeOpacity={0.8}
+                            onPress={() => router.push('/products/search')}
+                        >
                             <Ionicons name="search-outline" size={18} color="#9CA3AF" />
                             <TextInput
                                 placeholder="Cari menu favorit..."
                                 placeholderTextColor="#9CA3AF"
                                 className="ml-2 flex-1 text-sm text-gray-900"
+                                editable={false}
                             />
-                        </View>
+                        </TouchableOpacity>
 
                         <TouchableOpacity
                             className="w-11 h-11 rounded-2xl bg-gray-900 items-center justify-center"

@@ -72,6 +72,14 @@ export default function RootLayout() {
             lightColor: 'transparent',
             sound: 'default',
           }).catch(() => { });
+
+          Notifications.setNotificationChannelAsync('transactions', {
+            name: 'Notifikasi Transaksi',
+            importance: Notifications.AndroidImportance.HIGH,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: '#10B981',
+            sound: 'default',
+          }).catch(() => { });
         }
 
         notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
@@ -122,7 +130,6 @@ export default function RootLayout() {
                   >
                     <Stack.Screen name="index" />
                     <Stack.Screen name="(tabs)" />
-                    <Stack.Screen name="checkout" />
                   </Stack>
                 </SafeAreaView>
               </CartProvider>

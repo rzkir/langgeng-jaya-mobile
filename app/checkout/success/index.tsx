@@ -4,11 +4,13 @@ import { router } from 'expo-router';
 
 import LottieView from 'lottie-react-native';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { formatRupiah } from '@/lib/FormatPrice';
+
+import { usePushNotifications } from '@/lib/PushNotifications';
 
 import Badge from '@/components/Badge';
 
@@ -24,9 +26,48 @@ export default function CheckoutSuccess() {
         customerName,
         cashierName,
         transactionItems,
+        total,
         handlePrint,
         handleShare,
     } = useStateSuccess();
+
+    const {
+        sendTransactionNotification,
+        loading: notificationsLoading,
+        notificationPermission,
+        settings,
+    } = usePushNotifications();
+    const notifiedRef = useRef(false);
+
+    useEffect(() => {
+        if (
+            notifiedRef.current ||
+            !transactionNumber ||
+            transactionNumber === "-" ||
+            notificationsLoading ||
+            !notificationPermission ||
+            !settings.pushEnabled ||
+            settings.transactionNotifications !== true
+        ) {
+            return;
+        }
+        let cancelled = false;
+        (async () => {
+            const sent = await sendTransactionNotification(transactionNumber, total, false);
+            if (!cancelled && sent) notifiedRef.current = true;
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [
+        transactionNumber,
+        total,
+        sendTransactionNotification,
+        notificationsLoading,
+        notificationPermission,
+        settings.pushEnabled,
+        settings.transactionNotifications,
+    ]);
 
     return (
         <View className="flex-1 bg-white">

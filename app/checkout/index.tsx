@@ -69,7 +69,7 @@ export default function Checkout() {
     } = useStateCheckout();
 
     return (
-        <View className="flex-1">
+        <View className="flex-1 bg-white">
             {/* Header */}
             <View className="pt-4 pb-3 flex-row items-center justify-between border-b border-gray-200 mx-4">
                 <TouchableOpacity

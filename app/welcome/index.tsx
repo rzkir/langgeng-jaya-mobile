@@ -84,7 +84,7 @@ export default function WelcomeScreen() {
     };
 
     return (
-        <View className="flex-1">
+        <View className="flex-1 bg-white">
             {/* Skip Button */}
             {currentIndex < onboardingData.length - 1 && (
                 <View className="absolute top-4 right-4 z-10">

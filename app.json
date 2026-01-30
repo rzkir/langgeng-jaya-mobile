@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Langgeng Jaya",
-    "slug": "langgen-jaya",
+    "slug": "langgeng-jaya",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/langgeng-jaya.png",
@@ -9,17 +9,47 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Aplikasi memerlukan akses kamera untuk scan barcode produk dan mengambil foto properti",
+        "NSPhotoLibraryUsageDescription": "Aplikasi memerlukan akses ke galeri untuk memilih dan menyimpan foto",
+        "NSPhotoLibraryAddUsageDescription": "Aplikasi memerlukan izin untuk menyimpan foto ke galeri",
+        "NSBluetoothAlwaysUsageDescription": "Aplikasi memerlukan akses Bluetooth untuk mencetak struk dan terhubung dengan printer",
+        "NSBluetoothWhenInUseUsageDescription": "Aplikasi memerlukan akses Bluetooth untuk mencetak struk dan terhubung dengan printer",
+        "NSBluetoothPeripheralUsageDescription": "Aplikasi memerlukan akses Bluetooth untuk mencetak struk dan terhubung dengan printer",
+        "NSLocationWhenInUseUsageDescription": "Aplikasi memerlukan akses lokasi untuk mencari perangkat Bluetooth di sekitar",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "com.kasirmini.kasirmini"
     },
     "android": {
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#2b3784",
         "foregroundImage": "./assets/images/icons.png",
         "backgroundImage": "./assets/images/icons.png",
         "monochromeImage": "./assets/images/icons.png"
       },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.BLUETOOTH_CONNECT",
+        "android.permission.BLUETOOTH_SCAN",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.RECORD_AUDIO"
+      ],
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.kasirmini.kasirmini"
     },
     "web": {
       "output": "static",
@@ -49,6 +79,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d57bfa72-ef18-40b7-9db6-03d4eb0f7c69"
+      }
+    },
+    "owner": "paul2012"
   }
 }

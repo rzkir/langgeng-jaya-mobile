@@ -19,6 +19,14 @@ export const API_CONFIG = {
                     });
                     return `${API_BASE_URL}/karyawan/products?${params.toString()}`;
                 },
+                search: (branchName: string, page: number = 1, limit: number = 10) => {
+                    const params = new URLSearchParams({
+                        branch_name: branchName.trim(),
+                        page: String(page),
+                        limit: String(limit),
+                    });
+                    return `${API_BASE_URL}/karyawan/products/search?${params.toString()}`;
+                },
                 details: (id: string) => `${API_BASE_URL}/karyawan/products/${encodeURIComponent(String(id))}`,
                 popular: (branchName: string, limit: number = 100) => {
                     const params = new URLSearchParams({

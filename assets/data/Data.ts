@@ -85,17 +85,17 @@ export const HeaderData = [
     },
     {
         id: 2,
-        title: "Rekaputasi",
-        link: "/transaction",
+        title: "Laporan",
+        link: "/report",
     },
     {
         id: 3,
-        title: "Rekaputasi",
-        link: "/transaction",
+        title: "Hutang",
+        link: "/debt",
     },
     {
         id: 4,
-        title: "Rekaputasi",
-        link: "/transaction",
+        title: "Pembayaran",
+        link: "/payment",
     }
 ]

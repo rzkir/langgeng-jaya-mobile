@@ -1,6 +1,8 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 
 import { Image, Pressable, ScrollView, Text, View, type DimensionValue } from 'react-native'
+
+import { usePushNotifications } from '@/lib/PushNotifications'
 
 import { fetchProductDetails } from '@/services/FetchProducts'
 
@@ -9,6 +11,7 @@ import { router, useLocalSearchParams } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 
 import { useQuery } from '@tanstack/react-query'
+
 import { MotiView } from 'moti'
 
 export default function ProductsDetails() {
@@ -20,6 +23,20 @@ export default function ProductsDetails() {
     })
 
     const productDetails = data
+    const { sendLowStockAlert } = usePushNotifications()
+    const lowStockAlertSentRef = useRef(false)
+
+    const isLowStock =
+        productDetails != null &&
+        productDetails.stock != null &&
+        productDetails.min_stock != null &&
+        productDetails.stock <= productDetails.min_stock
+
+    useEffect(() => {
+        if (!productDetails || !isLowStock || lowStockAlertSentRef.current) return
+        lowStockAlertSentRef.current = true
+        sendLowStockAlert(productDetails.name, productDetails.stock)
+    }, [productDetails, isLowStock, sendLowStockAlert])
 
     const SkeletonBox = ({
         width = '100%',
@@ -179,8 +196,6 @@ export default function ProductsDetails() {
             return dateString
         }
     }
-
-    const isLowStock = productDetails.stock != null && productDetails.min_stock != null && productDetails.stock <= productDetails.min_stock
 
     return (
         <View className="flex-1 bg-white">

@@ -174,6 +174,51 @@ type UseStateProductsResult = {
     handleConfirmDelete: () => void;
 };
 
+//====================== Products Search Screen State ======================//
+type UseStateSearchResult = {
+    branchName: string;
+
+    // cart
+    totalItems: number;
+    totalPrice: number;
+    clearCart: () => void;
+    addItem: (product: Product | ProductPopular, quantity?: number) => void;
+
+    // search & filter
+    searchQuery: string;
+    setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
+    selectedCategory: string | null;
+    setSelectedCategory: React.Dispatch<React.SetStateAction<string | null>>;
+    isCategorySheetVisible: boolean;
+    setIsCategorySheetVisible: (v: boolean) => void;
+    categories: Category[];
+
+    // products (infinite)
+    products: ProductPopular[];
+    filteredProducts: ProductPopular[];
+    isLoading: boolean;
+    isError: boolean;
+    error: Error | null;
+    errorMessage: string;
+    fetchNextPage: () => void;
+    hasNextPage: boolean | undefined;
+    isFetchingNextPage: boolean;
+    isRefetching: boolean;
+    refetch: () => Promise<any>;
+
+    // delete cart confirm
+    isConfirmVisible: boolean;
+    setIsConfirmVisible: (v: boolean) => void;
+    handleConfirmDelete: () => void;
+
+    // scanner
+    isScannerVisible: boolean;
+    setScannerVisible: (v: boolean) => void;
+    ScannerComponent: any | null;
+    handleOpenScanner: () => Promise<void>;
+    handleBarCodeScanned: ({ data }: { data: string }) => void;
+};
+
 //====================== Header Props ======================//
 interface HeaderProps {
     onMenuPress?: () => void;
