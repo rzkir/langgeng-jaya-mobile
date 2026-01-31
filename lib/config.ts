@@ -68,6 +68,20 @@ export const API_CONFIG = {
                 byId: (id: string | number) =>
                     `${API_BASE_URL}/laporan/${encodeURIComponent(String(id))}`,
             },
+            cashlog: {
+                base: `${API_BASE_URL}/cashlog`,
+                list: (branchName: string, page: number = 1, limit: number = 20, type?: string) => {
+                    const params = new URLSearchParams({
+                        branch_name: branchName.trim(),
+                        page: String(page),
+                        limit: String(limit),
+                    });
+                    if (type && type.trim() !== '') params.set('type', type.trim());
+                    return `${API_BASE_URL}/cashlog?${params.toString()}`;
+                },
+                byId: (id: string | number) =>
+                    `${API_BASE_URL}/cashlog/${encodeURIComponent(String(id))}`,
+            },
         },
     },
     SECRET: API_SECRET,

@@ -94,45 +94,37 @@ type UseStatePartialResult = {
 type UseStateBerandaResult = {
     branchName: string;
 
-    // cart
     totalItems: number;
     totalPrice: number;
     clearCart: () => void;
     addItem: (product: Product, quantity?: number) => void;
 
-    // products
     products: Product[];
     isLoading: boolean;
     error: Error | null;
     errorMessage: string;
 
-    // popular products
     popularProducts: ProductPopular[];
     popularLoading: boolean;
     popularError: Error | null;
     popularErrorMessage: string;
 
-    // categories
     categories: Category[];
     categoriesLoading: boolean;
     categoriesError: Error | null;
     categoriesErrorMessage: string;
 
-    // category filter
     selectedCategory: string | null;
     setSelectedCategory: React.Dispatch<React.SetStateAction<string | null>>;
     filteredProducts: Product[];
 
-    // delete cart confirm
     isConfirmVisible: boolean;
     setIsConfirmVisible: (v: boolean) => void;
     handleConfirmDelete: () => void;
 
-    // refresh
     isRefreshing: boolean;
     handleRefresh: () => Promise<void>;
 
-    // scanner
     isScannerVisible: boolean;
     setScannerVisible: (v: boolean) => void;
     ScannerComponent: any | null;
@@ -144,31 +136,26 @@ type UseStateBerandaResult = {
 type UseStateProductsResult = {
     branchName: string;
 
-    // cart
     addItem: (product: Product, quantity?: number) => void;
     totalItems: number;
     totalPrice: number;
     clearCart: () => void;
 
-    // products
     products: Product[];
     isLoading: boolean;
     error: Error | null;
     errorMessage: string;
     refetch: () => Promise<any>;
 
-    // refresh
     isRefreshing: boolean;
     handleRefresh: () => Promise<void>;
 
-    // scanner
     isScannerVisible: boolean;
     setScannerVisible: (v: boolean) => void;
     ScannerComponent: any | null;
     handleOpenScanner: () => Promise<void>;
     handleBarCodeScanned: ({ data }: { data: string }) => void;
 
-    // delete cart confirm
     isConfirmVisible: boolean;
     setIsConfirmVisible: (v: boolean) => void;
     handleConfirmDelete: () => void;
@@ -178,13 +165,11 @@ type UseStateProductsResult = {
 type UseStateSearchResult = {
     branchName: string;
 
-    // cart
     totalItems: number;
     totalPrice: number;
     clearCart: () => void;
     addItem: (product: Product | ProductPopular, quantity?: number) => void;
 
-    // search & filter
     searchQuery: string;
     setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
     selectedCategory: string | null;
@@ -193,7 +178,6 @@ type UseStateSearchResult = {
     setIsCategorySheetVisible: (v: boolean) => void;
     categories: Category[];
 
-    // products (infinite)
     products: ProductPopular[];
     filteredProducts: ProductPopular[];
     isLoading: boolean;
@@ -206,18 +190,61 @@ type UseStateSearchResult = {
     isRefetching: boolean;
     refetch: () => Promise<any>;
 
-    // delete cart confirm
     isConfirmVisible: boolean;
     setIsConfirmVisible: (v: boolean) => void;
     handleConfirmDelete: () => void;
 
-    // scanner
     isScannerVisible: boolean;
     setScannerVisible: (v: boolean) => void;
     ScannerComponent: any | null;
     handleOpenScanner: () => Promise<void>;
     handleBarCodeScanned: ({ data }: { data: string }) => void;
 };
+
+//====================== Filter Laporan Props ======================//
+interface FilterLaporanProps {
+    visible: boolean;
+    onClose: () => void;
+    filterStatus: StoreExpense['status'] | 'all';
+    setFilterStatus: (s: StoreExpense['status'] | 'all') => void;
+    filterCategory: StoreExpense['category'] | 'all';
+    setFilterCategory: (c: StoreExpense['category'] | 'all') => void;
+    filterDateFrom: string;
+    filterDateTo: string;
+    showFilterDateFrom: boolean;
+    setShowFilterDateFrom: (v: boolean) => void;
+    showFilterDateTo: boolean;
+    setShowFilterDateTo: (v: boolean) => void;
+    onFilterDateFromChange: (event: { type: string }, date?: Date) => void;
+    onFilterDateToChange: (event: { type: string }, date?: Date) => void;
+    clearFilters: () => void;
+    closeFilterSheet: () => void;
+}
+
+//====================== Create Laporan Props ======================//
+interface CreateLaporanProps {
+    visible: boolean;
+    onClose: () => void;
+    branchName: string;
+    userName: string;
+    formDate: string;
+    formCategory: StoreExpense['category'];
+    setFormCategory: (c: StoreExpense['category']) => void;
+    formAmount: string;
+    setFormAmount: (v: string) => void;
+    formDescription: string;
+    setFormDescription: (v: string) => void;
+    formReceiptUrl: string;
+    setFormReceiptUrl: (v: string) => void;
+    showDatePicker: boolean;
+    setShowDatePicker: (v: boolean) => void;
+    formDateAsDate: () => Date;
+    onDateChange: (event: { type: string }, date?: Date) => void;
+    uploadReceiptLoading: boolean;
+    pickReceiptImage: () => void;
+    handleSubmit: () => void;
+    isSubmitting: boolean;
+}
 
 //====================== Header Props ======================//
 interface HeaderProps {
