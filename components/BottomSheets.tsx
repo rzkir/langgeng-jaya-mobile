@@ -180,4 +180,3 @@ const styles = StyleSheet.create({
         backgroundColor: '#D1D5DB',
     },
 });
-

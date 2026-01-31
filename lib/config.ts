@@ -53,6 +53,21 @@ export const API_CONFIG = {
                 byId: (id: string | number) =>
                     `${API_BASE_URL}/karyawan/transaction/${encodeURIComponent(String(id))}`,
             },
+            laporan: {
+                base: `${API_BASE_URL}/laporan`,
+                upload: `${API_BASE_URL}/laporan/upload`,
+                list: (branchName: string, page: number = 1, limit: number = 20, status?: string) => {
+                    const params = new URLSearchParams({
+                        branch_name: branchName.trim(),
+                        page: String(page),
+                        limit: String(limit),
+                    });
+                    if (status && status.trim() !== '') params.set('status', status.trim());
+                    return `${API_BASE_URL}/laporan?${params.toString()}`;
+                },
+                byId: (id: string | number) =>
+                    `${API_BASE_URL}/laporan/${encodeURIComponent(String(id))}`,
+            },
         },
     },
     SECRET: API_SECRET,
