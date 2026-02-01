@@ -1,10 +1,23 @@
 import React from 'react';
 
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import BottomSheets from '@/components/BottomSheets';
 
-import { formatRupiah } from '@/lib/FormatPrice';
+import { formatRupiah, formatRupiahInput } from '@/lib/FormatPrice';
+
+const styles = StyleSheet.create({
+    input: { backgroundColor: 'rgba(249,250,251,0.95)' },
+    methodContainer: { backgroundColor: 'rgba(243,244,246,0.95)' },
+    quickAmount: { backgroundColor: 'rgba(124,58,237,0.1)', borderWidth: 1, borderColor: 'rgba(124,58,237,0.2)' },
+    summaryHeader: { backgroundColor: 'rgba(124,58,237,0.05)' },
+    summaryBorder: { borderWidth: 1, borderColor: 'rgba(229,231,235,0.9)' },
+    shadowSm: { shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
+});
+
+const labelClass = 'text-gray-600 text-[12px] mb-1.5 font-medium';
+
+const inputClass = 'w-full rounded-xl border border-gray-200 px-2 py-3.5 text-gray-900 text-[15px]';
 
 export default function Payment({
     visible,
@@ -40,79 +53,93 @@ export default function Payment({
             onClose={onClose}
             title="Pembayaran"
         >
-            <View className="mt-2">
-                <Text className="text-gray-900 text-[13px] mb-2 font-semibold">Nama pelanggan</Text>
-                <TextInput
-                    className="w-full rounded-2xl bg-gray-50 border border-gray-200 px-4 py-3 text-gray-900"
-                    placeholder="Masukkan nama pelanggan"
-                    placeholderTextColor="#9CA3AF"
-                    value={customerName}
-                    onChangeText={onChangeCustomerName}
-                />
-
-                <Text className="text-gray-900 text-[13px] mt-5 mb-2 font-semibold">Metode pembayaran</Text>
-                <View className="flex-row gap-2 bg-gray-50 border border-gray-200 rounded-2xl p-1">
-                    <TouchableOpacity
-                        className={`flex-1 py-3 rounded-2xl items-center ${paymentMethod === 'cash'
-                            ? 'bg-gray-900'
-                            : 'bg-transparent'
-                            }`}
-                        activeOpacity={0.85}
-                        onPress={() => onChangePaymentMethod('cash')}
-                    >
-                        <Text
-                            className={`font-semibold ${paymentMethod === 'cash' ? 'text-white' : 'text-gray-700'
-                                }`}
-                        >
-                            Cash
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        className={`flex-1 py-3 rounded-2xl items-center ${paymentMethod === 'kasbon'
-                            ? 'bg-gray-900'
-                            : 'bg-transparent'
-                            }`}
-                        activeOpacity={0.85}
-                        onPress={() => onChangePaymentMethod('kasbon')}
-                    >
-                        <Text
-                            className={`font-semibold ${paymentMethod === 'kasbon' ? 'text-white' : 'text-gray-700'
-                                }`}
-                        >
-                            Kasbon
-                        </Text>
-                    </TouchableOpacity>
+            <View className="mt-1 pb-2">
+                {/* Nama pelanggan */}
+                <View className="mb-4">
+                    <Text className={labelClass}>Nama pelanggan</Text>
+                    <TextInput
+                        className={inputClass}
+                        style={styles.input}
+                        placeholder="Masukkan nama pelanggan"
+                        placeholderTextColor="#9CA3AF"
+                        value={customerName}
+                        onChangeText={onChangeCustomerName}
+                    />
                 </View>
 
-                <Text className="text-gray-900 text-[13px] mt-5 mb-2 font-semibold">Diskon (Rp)</Text>
-                <TextInput
-                    className="w-full rounded-2xl bg-gray-50 border border-gray-200 px-4 py-3 text-gray-900"
-                    placeholder="0"
-                    placeholderTextColor="#9CA3AF"
-                    keyboardType="numeric"
-                    value={discountInput}
-                    onChangeText={onChangeDiscountInput}
-                />
+                {/* Metode pembayaran */}
+                <View className="mb-4">
+                    <Text className={labelClass}>Metode pembayaran</Text>
+                    <View className="flex-row gap-2 rounded-xl p-1" style={styles.methodContainer}>
+                        <TouchableOpacity
+                            className={`flex-1 py-3 rounded-lg items-center justify-center ${paymentMethod === 'cash' ? 'bg-primary' : 'bg-transparent'}`}
+                            style={paymentMethod === 'cash' ? styles.shadowSm : undefined}
+                            activeOpacity={0.8}
+                            onPress={() => onChangePaymentMethod('cash')}
+                        >
+                            <Text
+                                className={`font-semibold text-[14px] ${paymentMethod === 'cash' ? 'text-white' : 'text-gray-600'
+                                    }`}
+                            >
+                                Cash
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            className={`flex-1 py-3 rounded-lg items-center justify-center ${paymentMethod === 'kasbon' ? 'bg-primary' : 'bg-transparent'}`}
+                            style={paymentMethod === 'kasbon' ? styles.shadowSm : undefined}
+                            activeOpacity={0.8}
+                            onPress={() => onChangePaymentMethod('kasbon')}
+                        >
+                            <Text
+                                className={`font-semibold text-[14px] ${paymentMethod === 'kasbon' ? 'text-white' : 'text-gray-600'
+                                    }`}
+                            >
+                                Kasbon
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
 
-                <Text className="text-gray-900 text-[13px] mt-5 mb-2 font-semibold">Uang diterima</Text>
-                <TextInput
-                    className="w-full rounded-2xl bg-gray-50 border border-gray-200 px-4 py-3 text-gray-900"
-                    placeholder="0"
-                    placeholderTextColor="#9CA3AF"
-                    keyboardType="numeric"
-                    value={receivedInput}
-                    onChangeText={onChangeReceivedInput}
-                />
+                {/* Diskon & Uang diterima */}
+                <View className="flex-row gap-3 mb-4">
+                    <View className="flex-1">
+                        <Text className={labelClass}>Diskon (Rp)</Text>
+                        <TextInput
+                            className={inputClass}
+                            style={styles.input}
+                            placeholder="0"
+                            placeholderTextColor="#9CA3AF"
+                            keyboardType="numeric"
+                            value={discountInput}
+                            onChangeText={(t) => onChangeDiscountInput(formatRupiahInput(t))}
+                        />
+                    </View>
+                    <View className="flex-1">
+                        <Text className={labelClass}>Uang diterima</Text>
+                        <TextInput
+                            className={inputClass}
+                            style={styles.input}
+                            placeholder="0"
+                            placeholderTextColor="#9CA3AF"
+                            keyboardType="numeric"
+                            value={receivedInput}
+                            onChangeText={(t) => onChangeReceivedInput(formatRupiahInput(t))}
+                        />
+                    </View>
+                </View>
+
+                {/* Quick amounts */}
                 {quickAmounts.length > 0 && (
-                    <View className="mt-3 flex-row flex-wrap gap-2">
+                    <View className="mb-5 flex-row flex-wrap gap-2">
                         {quickAmounts.map((amount) => (
                             <TouchableOpacity
                                 key={amount}
-                                className="px-3 py-2 rounded-2xl bg-white border border-gray-200"
-                                activeOpacity={0.85}
-                                onPress={() => onChangeReceivedInput(String(amount))}
+                                className="px-4 py-2.5 rounded-xl border"
+                                style={styles.quickAmount}
+                                activeOpacity={0.8}
+                                onPress={() => onChangeReceivedInput(formatRupiahInput(String(amount)))}
                             >
-                                <Text className="text-gray-900 text-xs font-semibold">
+                                <Text className="text-primary font-semibold text-[13px]">
                                     {formatRupiah(amount)}
                                 </Text>
                             </TouchableOpacity>
@@ -120,75 +147,80 @@ export default function Payment({
                     </View>
                 )}
 
-                {/* Summary pembayaran */}
-                <View className="mt-5 rounded-3xl bg-white border border-gray-200 p-4">
-                    <View className="flex-row items-center justify-between mb-3">
-                        <Text className="text-gray-900 font-semibold text-[14px] tracking-tight">Ringkasan</Text>
-                        <View className="px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
-                            <Text className="text-emerald-700 font-semibold text-[12px]">
+                {/* Ringkasan */}
+                <View className="rounded-2xl bg-gray-50 overflow-hidden mb-5" style={styles.summaryBorder}>
+                    <View className="px-4 py-3 border-b border-gray-200" style={styles.summaryHeader}>
+                        <View className="flex-row items-center justify-between">
+                            <Text className="text-gray-700 font-semibold text-[13px]">Ringkasan</Text>
+                            <View className="px-3 py-1.5 rounded-lg bg-primary">
+                                <Text className="text-white font-bold text-[13px]">
+                                    {formatRupiah(total)}
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                    <View className="px-4 py-3">
+                        <View className="flex-row items-center justify-between mb-2">
+                            <Text className="text-gray-500 text-[12px]">Sub total</Text>
+                            <Text className="text-gray-800 font-medium text-[12px]">
+                                {formatRupiah(subtotal)}
+                            </Text>
+                        </View>
+                        <View className="flex-row items-center justify-between mb-2">
+                            <Text className="text-gray-500 text-[12px]">Diskon</Text>
+                            <Text className="text-gray-800 font-medium text-[12px]">
+                                {formatRupiah(discount)}
+                            </Text>
+                        </View>
+                        <View className="h-px bg-gray-200 my-2" />
+                        <View className="flex-row items-center justify-between">
+                            <Text className="text-gray-700 font-semibold text-[13px]">Total bayar</Text>
+                            <Text className="text-gray-900 font-semibold text-[13px]">
                                 {formatRupiah(total)}
                             </Text>
                         </View>
-                    </View>
-                    <View className="flex-row items-center justify-between mb-2">
-                        <Text className="text-gray-600 text-[12px]">Sub total</Text>
-                        <Text className="text-gray-900 font-semibold text-[12px}">
-                            {formatRupiah(subtotal)}
-                        </Text>
-                    </View>
-                    <View className="flex-row items-center justify-between mb-2">
-                        <Text className="text-gray-600 text-[12px]">Diskon</Text>
-                        <Text className="text-gray-900 font-semibold text-[12px}">
-                            {formatRupiah(discount)}
-                        </Text>
-                    </View>
-                    <View className="h-px bg-gray-200/70 my-2" />
-                    <View className="flex-row items-center justify-between mb-1">
-                        <Text className="text-gray-900 font-semibold text-[13px]">Total bayar</Text>
-                        <Text className="text-gray-900 font-semibold text-[13px]">
-                            {formatRupiah(total)}
-                        </Text>
-                    </View>
-                    <View className="flex-row items-center justify-between mt-1">
-                        <Text className="text-gray-600 text-[12px]">Uang diterima</Text>
-                        <Text className="text-gray-900 font-semibold text-[12px]">
-                            {formatRupiah(receivedAmount)}
-                        </Text>
-                    </View>
-                    {paymentMethod === 'kasbon' ? (
-                        <View className="flex-row items-center justify-between mt-1">
-                            <Text className="text-gray-600 text-[12px]">Jumlah yang harus dibayar</Text>
-                            <Text className="text-gray-900 font-semibold text-[12px]">
-                                {formatRupiah(amountDue)}
+                        <View className="flex-row items-center justify-between mb-2">
+                            <Text className="text-gray-500 text-[12px]">Uang diterima</Text>
+                            <Text className="text-gray-800 font-medium text-[12px]">
+                                {formatRupiah(receivedAmount)}
                             </Text>
                         </View>
-                    ) : (
-                        <View className="flex-row items-center justify-between mt-1">
-                            <Text className="text-gray-600 text-[12px]">Kembalian</Text>
-                            <Text className="text-gray-900 font-semibold text-[12px]">
-                                {formatRupiah(change)}
-                            </Text>
-                        </View>
-                    )}
+                        {paymentMethod === 'kasbon' ? (
+                            <View className="flex-row items-center justify-between pt-1">
+                                <Text className="text-gray-500 text-[12px]">Sisa harus dibayar</Text>
+                                <Text className="text-primary font-semibold text-[12px]">
+                                    {formatRupiah(amountDue)}
+                                </Text>
+                            </View>
+                        ) : (
+                            <View className="flex-row items-center justify-between pt-1">
+                                <Text className="text-gray-500 text-[12px]">Kembalian</Text>
+                                <Text className="text-success font-semibold text-[12px]">
+                                    {formatRupiah(change)}
+                                </Text>
+                            </View>
+                        )}
+                    </View>
                 </View>
 
-                <View className="mt-5 flex-row gap-3 pb-4">
+                {/* Actions */}
+                <View className="flex-row gap-3 pb-1">
                     <TouchableOpacity
-                        className="flex-1 py-3 rounded-2xl border border-gray-200 bg-white items-center"
-                        activeOpacity={0.85}
+                        className="flex-1 py-3.5 rounded-xl border-2 border-gray-200 bg-white items-center justify-center active:bg-gray-50"
+                        activeOpacity={0.8}
                         onPress={onClose}
                     >
-                        <Text className="text-gray-900 font-semibold">Batal</Text>
+                        <Text className="text-gray-700 font-semibold text-[15px]">Batal</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        className={`flex-1 py-3 rounded-2xl items-center ${isSubmitting ? 'bg-gray-400' : 'bg-gray-900'
+                        className={`flex-1 py-3.5 rounded-xl items-center justify-center ${isSubmitting ? 'bg-gray-400' : 'bg-primary'
                             }`}
-                        activeOpacity={0.85}
+                        activeOpacity={0.8}
                         disabled={isSubmitting}
                         onPress={onSubmit}
                     >
-                        <Text className="text-white font-semibold">
-                            {isSubmitting ? 'Pembayaran berlangsung...' : 'Bayar Sekarang'}
+                        <Text className="text-white font-semibold text-[15px]">
+                            {isSubmitting ? 'Memproses...' : 'Bayar Sekarang'}
                         </Text>
                     </TouchableOpacity>
                 </View>

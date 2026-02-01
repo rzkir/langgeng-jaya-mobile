@@ -35,6 +35,8 @@ interface CreateCashLogProps {
     onDateChange: (event: { type: string }, date?: Date) => void;
     handleSubmit: () => void;
     isSubmitting: boolean;
+    validationMessage?: string | null;
+    createError?: Error | null;
 }
 
 export default function CreateCashLog({
@@ -53,7 +55,10 @@ export default function CreateCashLog({
     onDateChange,
     handleSubmit,
     isSubmitting,
+    validationMessage,
+    createError,
 }: CreateCashLogProps) {
+    const errorText = validationMessage ?? (createError instanceof Error ? createError.message : null);
     return (
         <BottomSheets visible={visible} onClose={onClose} title="Tambah Cash Log">
             <View className="min-h-[500px]">
@@ -67,6 +72,11 @@ export default function CreateCashLog({
                         keyboardShouldPersistTaps="handled"
                         contentContainerStyle={{ paddingBottom: 24 }}
                     >
+                        {errorText && (
+                            <View className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+                                <Text className="text-sm text-red-700">{errorText}</Text>
+                            </View>
+                        )}
                         <Text className="text-sm font-medium text-gray-700 mb-1">Cabang</Text>
                         <TextInput
                             value={branchName}

@@ -5,7 +5,7 @@ import { API_CONFIG } from '@/lib/config';
 export async function fetchCashLog(
     branchName: string,
     page: number = 1,
-    limit: number = 20,
+    limit: number = 100,
     type?: string,
 ): Promise<CashLogListResponse> {
     try {

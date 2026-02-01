@@ -21,7 +21,7 @@
         "NSLocationWhenInUseUsageDescription": "Aplikasi memerlukan akses lokasi untuk mencari perangkat Bluetooth di sekitar",
         "ITSAppUsesNonExemptEncryption": false
       },
-      "bundleIdentifier": "com.kasirmini.kasirmini"
+      "bundleIdentifier": "com.langgengjaya.langgengjaya"
     },
     "android": {
       "versionCode": 1,
@@ -49,7 +49,7 @@
       ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.kasirmini.kasirmini"
+      "package": "com.langgengjaya.langgengjaya"
     },
     "web": {
       "output": "static",

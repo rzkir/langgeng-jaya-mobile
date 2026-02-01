@@ -70,7 +70,7 @@ export const API_CONFIG = {
             },
             cashlog: {
                 base: `${API_BASE_URL}/cashlog`,
-                list: (branchName: string, page: number = 1, limit: number = 20, type?: string) => {
+                list: (branchName: string, page: number = 1, limit: number = 100, type?: string) => {
                     const params = new URLSearchParams({
                         branch_name: branchName.trim(),
                         page: String(page),

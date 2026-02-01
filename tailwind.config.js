@@ -5,19 +5,19 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Brand Colors
+        // Brand Colors (#7C3AED)
         primary: {
-          DEFAULT: '#FF9228',
-          50: '#FFF5E6',
-          100: '#FFE8CC',
-          200: '#FFD199',
-          300: '#FFBA66',
-          400: '#FFA333',
-          500: '#FF9228',
-          600: '#E67E1F',
-          700: '#CC6A16',
-          800: '#B3560D',
-          900: '#994204',
+          DEFAULT: '#7C3AED',
+          50: '#F5F3FF',
+          100: '#EDE9FE',
+          200: '#DDD6FE',
+          300: '#C4B5FD',
+          400: '#A78BFA',
+          500: '#7C3AED',
+          600: '#6D28D9',
+          700: '#5B21B6',
+          800: '#4C1D95',
+          900: '#3B0764',
         },
         // Status Colors
         success: {
