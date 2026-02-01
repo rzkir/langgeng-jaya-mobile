@@ -58,7 +58,7 @@ export default function Rekap() {
 
     if (isLoading && records.length === 0) {
         return (
-            <View className="flex-1 bg-gray-50 items-center justify-center">
+            <View className="flex-1 bg-white items-center justify-center">
                 <ActivityIndicator size="large" color="#7C3AED" />
                 <Text className="mt-3 text-gray-500">Memuat rekap...</Text>
             </View>
@@ -67,7 +67,7 @@ export default function Rekap() {
 
     if (error && records.length === 0) {
         return (
-            <View className="flex-1 bg-gray-50 px-5 justify-center">
+            <View className="flex-1 bg-white px-5 justify-center">
                 <View className="bg-white rounded-2xl p-6 border border-gray-100">
                     <View className="w-14 h-14 rounded-full bg-red-50 items-center justify-center self-center mb-4">
                         <Ionicons name="alert-circle-outline" size={28} color="#DC2626" />
