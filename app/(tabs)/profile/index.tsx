@@ -3,9 +3,11 @@ import React, { useMemo } from 'react';
 import {
     ActivityIndicator,
     Alert,
+    Image,
     RefreshControl,
     ScrollView,
     Text,
+    TextInput,
     TouchableOpacity,
     View,
 } from 'react-native';
@@ -16,152 +18,20 @@ import { router } from 'expo-router';
 
 import appJson from '@/app.json';
 
+import BottomSheets from '@/components/BottomSheets';
+
 import { useAuth } from '@/context/AuthContext';
 
 import { formatRupiah } from '@/lib/FormatPrice';
 
+import { useEditProfile } from '@/services/UploadProfile';
+
 import { useProfileStats } from '@/services/useProfileStats';
 
-function getInitials(name?: string) {
-    const cleaned = (name || '').trim();
-    if (!cleaned) return 'GU';
-    const parts = cleaned.split(/\s+/).filter(Boolean);
-    const first = parts[0]?.[0] ?? '';
-    const last = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? '' : '';
-    return `${first}${last}`.toUpperCase() || 'GU';
-}
-
-function SectionHeader({
-    title,
-    subtitle,
-    actionLabel,
-    onPressAction,
-}: {
-    title: string;
-    subtitle?: string;
-    actionLabel?: string;
-    onPressAction?: () => void;
-}) {
-    return (
-        <View className="flex-row items-end justify-between mb-3">
-            <View className="flex-1 pr-3">
-                <Text className="text-base font-bold text-slate-900">{title}</Text>
-                {!!subtitle && (
-                    <Text className="text-xs text-slate-500 mt-0.5">{subtitle}</Text>
-                )}
-            </View>
-            {!!actionLabel && !!onPressAction && (
-                <TouchableOpacity activeOpacity={0.7} onPress={onPressAction}>
-                    <Text className="text-sm font-semibold text-purple-600">
-                        {actionLabel}
-                    </Text>
-                </TouchableOpacity>
-            )}
-        </View>
-    );
-}
-
-function Card({ children }: { children: React.ReactNode }) {
-    return (
-        <View className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-            {children}
-        </View>
-    );
-}
-
-function StatCard({
-    icon,
-    iconBgClassName,
-    iconColor,
-    label,
-    value,
-    loading,
-    valueClassName,
-}: {
-    icon: React.ComponentProps<typeof Ionicons>['name'];
-    iconBgClassName: string;
-    iconColor: string;
-    label: string;
-    value: string;
-    loading?: boolean;
-    valueClassName?: string;
-}) {
-    return (
-        <View className="flex-1 bg-white rounded-3xl border border-slate-100 p-4">
-            <View className="flex-row items-center justify-between">
-                <View
-                    className={`w-10 h-10 rounded-2xl items-center justify-center ${iconBgClassName}`}
-                >
-                    <Ionicons name={icon} size={18} color={iconColor} />
-                </View>
-                {loading ? (
-                    <ActivityIndicator size="small" color="#7C3AED" />
-                ) : (
-                    <Text
-                        className={`text-lg font-bold text-slate-900 ${valueClassName || ''}`}
-                    >
-                        {value}
-                    </Text>
-                )}
-            </View>
-            <Text className="text-xs text-slate-500 mt-3">{label}</Text>
-        </View>
-    );
-}
-
-function Row({
-    icon,
-    iconBgClassName,
-    iconColor,
-    title,
-    subtitle,
-    right,
-    onPress,
-    danger,
-}: {
-    icon: React.ComponentProps<typeof Ionicons>['name'];
-    iconBgClassName: string;
-    iconColor: string;
-    title: string;
-    subtitle?: string;
-    right?: React.ReactNode;
-    onPress?: () => void;
-    danger?: boolean;
-}) {
-    const content = (
-        <View className="flex-row items-center px-4 py-4">
-            <View
-                className={`w-10 h-10 rounded-2xl items-center justify-center ${iconBgClassName}`}
-            >
-                <Ionicons name={icon} size={18} color={iconColor} />
-            </View>
-            <View className="flex-1 ml-3">
-                <Text
-                    className={`text-sm font-semibold ${danger ? 'text-red-600' : 'text-slate-900'}`}
-                >
-                    {title}
-                </Text>
-                {!!subtitle && (
-                    <Text className="text-xs text-slate-500 mt-0.5">{subtitle}</Text>
-                )}
-            </View>
-            {right ?? (
-                <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
-            )}
-        </View>
-    );
-
-    if (!onPress) return content;
-
-    return (
-        <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
-            {content}
-        </TouchableOpacity>
-    );
-}
+import { Card, Row, SectionHeader, StatCard, getInitials } from '@/components/Profile';
 
 export default function Profile() {
-    const { user, isLoading, logout } = useAuth();
+    const { user, isLoading, logout, updateUser } = useAuth();
     const {
         salesManaged,
         clientsServed,
@@ -169,6 +39,18 @@ export default function Profile() {
         isRefetching: refreshing,
         refetch,
     } = useProfileStats();
+
+    const {
+        editSheetVisible,
+        setEditSheetVisible,
+        editName,
+        setEditName,
+        editPhotoUri,
+        submitLoading,
+        openEditSheet,
+        pickPhoto,
+        handleSaveProfile,
+    } = useEditProfile(user?.id, user?.name, updateUser);
 
     const handleLogout = () => {
         Alert.alert(
@@ -239,10 +121,18 @@ export default function Profile() {
                         <View className="px-5 pt-5 pb-4">
                             <View className="flex-row items-start justify-between">
                                 <View className="flex-row flex-1 pr-3">
-                                    <View className="w-14 h-14 rounded-2xl bg-purple-100 items-center justify-center">
-                                        <Text className="text-purple-700 font-extrabold text-lg">
-                                            {getInitials(userData.name)}
-                                        </Text>
+                                    <View className="w-14 h-14 rounded-2xl bg-purple-100 items-center justify-center overflow-hidden">
+                                        {user?.avatar ? (
+                                            <Image
+                                                source={{ uri: user.avatar }}
+                                                className="w-full h-full"
+                                                resizeMode="cover"
+                                            />
+                                        ) : (
+                                            <Text className="text-purple-700 font-extrabold text-lg">
+                                                {getInitials(userData.name)}
+                                            </Text>
+                                        )}
                                     </View>
                                     <View className="flex-1 ml-3">
                                         <Text className="text-base font-bold text-slate-900">
@@ -270,12 +160,7 @@ export default function Profile() {
                                 <TouchableOpacity
                                     activeOpacity={0.7}
                                     className="w-10 h-10 rounded-2xl bg-slate-100 items-center justify-center"
-                                    onPress={() =>
-                                        Alert.alert(
-                                            'Edit profile',
-                                            'Coming soon.'
-                                        )
-                                    }
+                                    onPress={openEditSheet}
                                 >
                                     <Ionicons name="create-outline" size={18} color="#475569" />
                                 </TouchableOpacity>
@@ -327,9 +212,7 @@ export default function Profile() {
                         title="Account"
                         subtitle="Personal information"
                         actionLabel="Edit"
-                        onPressAction={() =>
-                            Alert.alert('Edit profile', 'Coming soon.')
-                        }
+                        onPressAction={openEditSheet}
                     />
                     <Card>
                         <Row
@@ -403,6 +286,15 @@ export default function Profile() {
                         />
                         <View className="h-px bg-slate-100 mx-4" />
                         <Row
+                            icon="key-outline"
+                            iconBgClassName="bg-amber-100"
+                            iconColor="#D97706"
+                            title="Ubah kata sandi"
+                            subtitle="Ganti password akun"
+                            onPress={() => router.push('/profile/change-password')}
+                        />
+                        <View className="h-px bg-slate-100 mx-4" />
+                        <Row
                             icon="shield-checkmark-outline"
                             iconBgClassName="bg-emerald-100"
                             iconColor="#059669"
@@ -436,6 +328,72 @@ export default function Profile() {
                     <Text className="text-xs text-slate-400">{userData.appVersion}</Text>
                 </View>
             </ScrollView>
+
+            {/* Edit profile bottom sheet */}
+            <BottomSheets
+                visible={editSheetVisible}
+                onClose={() => setEditSheetVisible(false)}
+                title="Edit profil"
+            >
+                <View className="pb-6">
+                    <View className="items-center mb-5">
+                        <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={pickPhoto}
+                            className="relative"
+                        >
+                            <View className="w-24 h-24 rounded-2xl bg-purple-100 items-center justify-center overflow-hidden">
+                                {editPhotoUri ? (
+                                    <Image
+                                        source={{ uri: editPhotoUri }}
+                                        className="w-full h-full"
+                                        resizeMode="cover"
+                                    />
+                                ) : user?.avatar ? (
+                                    <Image
+                                        source={{ uri: user.avatar }}
+                                        className="w-full h-full"
+                                        resizeMode="cover"
+                                    />
+                                ) : (
+                                    <Text className="text-purple-700 font-extrabold text-2xl">
+                                        {getInitials(editName || user?.name)}
+                                    </Text>
+                                )}
+                            </View>
+                            <View className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-purple-600 items-center justify-center border-2 border-white">
+                                <Ionicons name="camera" size={14} color="#fff" />
+                            </View>
+                        </TouchableOpacity>
+                        <Text className="text-xs text-slate-500 mt-2">Ketuk untuk ganti foto</Text>
+                    </View>
+
+                    <View className="mb-4">
+                        <Text className="text-sm font-semibold text-slate-700 mb-1.5">Nama</Text>
+                        <TextInput
+                            value={editName}
+                            onChangeText={setEditName}
+                            placeholder="Nama Anda"
+                            placeholderTextColor="#94A3B8"
+                            className="bg-slate-100 rounded-xl px-4 py-3 text-slate-900 text-base"
+                            editable={!submitLoading}
+                        />
+                    </View>
+
+                    <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={handleSaveProfile}
+                        disabled={submitLoading}
+                        className="bg-purple-600 rounded-xl py-3.5 items-center"
+                    >
+                        {submitLoading ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <Text className="text-white font-semibold text-base">Simpan</Text>
+                        )}
+                    </TouchableOpacity>
+                </View>
+            </BottomSheets>
         </View>
     );
 }

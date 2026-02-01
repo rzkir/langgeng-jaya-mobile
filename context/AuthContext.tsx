@@ -185,12 +185,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setError(null)
     }
 
+    const updateUser = (partial: Partial<User>) => {
+        setUser((prev) => {
+            if (!prev) return prev
+            const next = { ...prev, ...partial }
+            const raw = JSON.stringify(next)
+            if (hasWebStorage()) {
+                try {
+                    ; (globalThis as any).localStorage.setItem(USER_STORAGE_KEY, raw)
+                } catch (err) {
+                    console.error("Error persisting user:", err)
+                }
+            } else {
+                AsyncStorage.setItem(USER_STORAGE_KEY, raw).catch((err) =>
+                    console.error("Error persisting user:", err)
+                )
+            }
+            return next
+        })
+    }
+
     const value: AuthContextType = {
         user,
         isLoading,
         error,
         login,
         logout,
+        updateUser,
         isAuthenticated: !!user,
         clearError,
     }

@@ -9,6 +9,11 @@ export const API_CONFIG = {
             login: `${API_BASE_URL}/karyawan`,
             session: `${API_BASE_URL}/auth/session`,
         },
+        profile: {
+            base: `${API_BASE_URL}/profile`,
+            upload: `${API_BASE_URL}/profile/upload`,
+            password: `${API_BASE_URL}/profile/password`,
+        },
         karyawan: {
             products: {
                 list: (branchName: string, page: number = 1, limit: number = 100) => {
