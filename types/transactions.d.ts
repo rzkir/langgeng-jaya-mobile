@@ -213,6 +213,7 @@ type TxRecord = {
     customerName: string;
     orderCode: string;
     time: string;
+    createdAt: Date | null;
     amount: number;
     status: TxStatus;
     paymentMethodLabel: string;

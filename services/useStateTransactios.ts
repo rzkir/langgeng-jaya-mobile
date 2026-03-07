@@ -6,6 +6,10 @@ import { useQuery } from '@tanstack/react-query';
 
 import { useMemo, useState } from 'react';
 
+function normalizeStr(v: unknown) {
+    return String(v ?? '').trim().toLowerCase();
+}
+
 export function useStateTransactios() {
     const [filter, setFilter] = useState<'all' | TxStatus>('all');
     const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
@@ -48,6 +52,7 @@ export function useStateTransactios() {
                 customerName,
                 orderCode: tx.transaction_number,
                 time,
+                createdAt: created,
                 amount: tx.total,
                 status: tx.status as TxStatus,
                 paymentMethodLabel,
@@ -72,7 +77,7 @@ export function useStateTransactios() {
             return isSameDay(d, today);
         });
 
-        const completedToday = todayTx.filter((tx) => tx.status === 'completed');
+        const completedToday = todayTx.filter((tx) => normalizeStr(tx.status) === 'completed');
         const totalSalesToday = completedToday.reduce((sum, tx) => sum + (tx.total ?? 0), 0);
         const ordersToday = completedToday.length;
         const avg = ordersToday > 0 ? totalSalesToday / ordersToday : 0;
@@ -87,7 +92,7 @@ export function useStateTransactios() {
             return isSameDay(d, yesterday);
         });
 
-        const completedYesterday = yesterdayTx.filter((tx) => tx.status === 'completed');
+        const completedYesterday = yesterdayTx.filter((tx) => normalizeStr(tx.status) === 'completed');
         const totalSalesYesterday = completedYesterday.reduce((sum, tx) => sum + (tx.total ?? 0), 0);
 
         const trendPercent =

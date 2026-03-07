@@ -97,15 +97,15 @@ export const HeaderData: {
   },
   {
     id: 2,
-    title: "Rekaputasi",
-    link: "/transactions/rekap",
-    icon: "stats-chart-outline",
+    title: "Transaksi Hutang",
+    link: "/transactions/partial",
+    icon: "pricetag-outline",
   },
   {
     id: 3,
-    title: "Partial",
-    link: "/transactions/partial",
-    icon: "pricetag-outline",
+    title: "Rekap Transaksi",
+    link: "/transactions/rekap",
+    icon: "stats-chart-outline",
   },
   {
     id: 4,

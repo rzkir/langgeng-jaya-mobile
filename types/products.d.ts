@@ -20,9 +20,10 @@ interface ApiPagination {
 }
 
 interface ApiResponse<T> {
-    success: boolean;
-    message: string;
-    data: T;
+    success?: boolean;
+    message?: string;
+    error?: string;
+    data?: T;
     pagination?: ApiPagination;
 }
 

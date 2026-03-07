@@ -46,7 +46,7 @@ interface ProfileUploadResponse {
     name?: string;
 }
 
-interface ApiResponse {
+interface LegacyApiResponse {
     success?: boolean;
     message?: string;
     error?: string;

@@ -12,6 +12,10 @@ function isSameDay(a: Date, b: Date) {
     );
 }
 
+function normalizeStr(v: unknown) {
+    return String(v ?? '').trim().toLowerCase();
+}
+
 export function useProfileStats() {
     const { user } = useAuth();
     const branchName = user?.branchName ?? '';
@@ -43,14 +47,21 @@ export function useProfileStats() {
                 }
             }
 
+            const normUserName = normalizeStr(userName);
+            const normBranchName = normalizeStr(branchName);
+
             const userTransactions = allTransactions.filter(
-                (tx) => tx.created_by === userName && tx.branch_name === branchName
+                (tx) =>
+                    normalizeStr(tx.created_by) === normUserName &&
+                    normalizeStr(tx.branch_name) === normBranchName
             );
 
             const today = new Date();
             const todayCompletedTransactions = userTransactions.filter((tx) => {
-                if (!tx.created_at || tx.status !== 'completed') return false;
+                const status = normalizeStr(tx.status);
+                if (!tx.created_at || status !== 'completed') return false;
                 const txDate = new Date(tx.created_at);
+                if (Number.isNaN(txDate.getTime())) return false;
                 return isSameDay(txDate, today);
             });
 
